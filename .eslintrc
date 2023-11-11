@@ -1,0 +1,56 @@
+{
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  },
+  "env": {
+    "node": true
+  },
+  "extends": [
+    "airbnb-base",
+    "airbnb-typescript/base",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:prettier/recommended"
+  ],
+  "rules": {
+    "class-methods-use-this": "off",
+    "lines-between-class-members": ["error", "always", { "exceptAfterSingleLine": true }],
+    "max-classes-per-file": "off",
+    "no-empty-function": "off",
+    "no-return-await": "off",
+    "no-shadow": "off",
+    "no-undef": "off",
+    "no-useless-constructor": "off",
+    "require-await": "off",
+    "import/extensions": "off",
+    "import/no-unresolved": "off",
+    "import/prefer-default-export": "off",
+    "@typescript-eslint/await-thenable": "warn",
+    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-misused-promises": ["error", { "checksVoidReturn": false }],
+    "@typescript-eslint/no-namespace": "off",
+    "@typescript-eslint/no-shadow": "warn",
+    "@typescript-eslint/no-useless-constructor": "error",
+    "@typescript-eslint/require-await": "warn",
+    "@typescript-eslint/return-await": ["warn", "in-try-catch"]
+  },
+  "overrides": [
+    {
+      "files": ["src/**/*.spec.*", "*.js"],
+      "parserOptions": {
+        "project": "./tsconfig.spec.json"
+      },
+      "env": {
+        "jest": true
+      },
+      "plugins": ["jest"],
+      "rules": {
+        "dot-notation": "off",
+        "global-require": "off",
+        "import/no-extraneous-dependencies": "off",
+        "@typescript-eslint/no-non-null-assertion": "off",
+        "@typescript-eslint/no-var-requires": "off"
+      }
+    }
+  ]
+}
