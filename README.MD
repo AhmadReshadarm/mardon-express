@@ -1,8 +1,9 @@
-# fingraden TypeScript & Express.js & TypeORM Application
+# Mardon TypeScript & Express.js & TypeORM Application
 
 ## Dependencies
 
 > nodejs >= 12.14.0
+
 - `tsyringe` (dependency injection)
 - `express`
 - `typeorm`
@@ -19,7 +20,7 @@
 ## LiveReload for development
 
 > TypeScript >= 3.5.0
-`concurrently` & incremental build & `nodemon`
+> `concurrently` & incremental build & `nodemon`
 
 ## Run
 

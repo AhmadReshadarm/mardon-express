@@ -1,9 +1,9 @@
 import { IsNotEmpty, IsPositive } from 'class-validator';
-import { Column, Entity, JoinTable, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinTable, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { OrderProduct } from '../orders';
 import { Color } from './color.entity';
 import { Product } from './product.entity';
-import { Size } from './size.entity';
+import { Artical } from './artical.entity';
 @Entity()
 export class ProductVariant {
   @PrimaryGeneratedColumn()
@@ -29,6 +29,11 @@ export class ProductVariant {
   @JoinTable()
   color: Color;
 
+  @IsNotEmpty()
+  @ManyToOne(() => Artical, artical => artical.productVariants, { cascade: true, nullable: true })
+  @JoinTable()
+  artical: Artical;
+
   @Column('text', { nullable: true })
   images: string;
 
@@ -39,6 +44,7 @@ export class ProductVariant {
     price: number;
     available: boolean;
     color: Color;
+    artical: Artical;
     oldPrice?: number;
     // wholeSalePrice?: number;
     images: string;
@@ -52,6 +58,7 @@ export class ProductVariant {
       // this.wholeSalePrice = args.wholeSalePrice;
       this.available = args.available;
       this.color = args.color;
+      this.artical = args.artical;
       this.images = args.images;
     }
   }

@@ -1,7 +1,7 @@
 {
-  "name": "Fingarden",
+  "name": "Mardon",
   "version": "1.0.0",
-  "description": "Fingarden app with typescript + express.js + typeorm",
+  "description": "Mardon app with typescript + express.js + typeorm",
   "scripts": {
     "auth:dev": "cd ./authorization && npm run dev",
     "banners:dev": "cd ./banners && npm run dev",
