@@ -62,6 +62,18 @@ export interface ColorQueryDTO {
   readonly offset?: number;
 }
 
+export interface ArticalQueryDTO {
+  readonly name?: string;
+  readonly products?: string;
+  readonly category?: string;
+  readonly parent: string;
+  readonly url?: string;
+  readonly sortBy?: string;
+  readonly orderBy?: 'DESC' | 'ASC';
+  readonly limit?: number;
+  readonly offset?: number;
+}
+
 export interface SizeQueryDTO {
   readonly name?: string;
   readonly products?: string;
