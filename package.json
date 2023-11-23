@@ -13,13 +13,16 @@
     "reviews:dev": "cd ./reviews && npm run dev",
     "swagger:dev": "cd ./swagger && npm run dev",
     "wishlists:dev": "cd ./wishlists && npm run dev",
+    "mailer:dev": "cd ./mailer && npm run dev",
+    "news:dev": "cd ./news && npm run dev",
     "typecheck": "tsc --noEmit --incremental false --tsBuildInfoFile null",
     "circular": "pnpm run prestart && madge --circular dist/",
     "lint": "eslint 'core/**/*'",
     "lint:fix": "eslint --fix 'src/**/*'",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:cov": "jest --coverage"
+    "test:cov": "jest --coverage",
+    "start:server": "npm-run-all --parallel auth:dev banners:dev catalog:dev gateway:start images:dev orders:dev questions:dev reviews:dev swagger:dev wishlists:dev mailer:dev news:dev"
   },
   "keywords": [],
   "author": "",

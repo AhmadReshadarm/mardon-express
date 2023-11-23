@@ -4,7 +4,7 @@ import * as bcrypt from 'bcrypt';
 import { HttpStatus } from '../../core/lib/http-status';
 import { UserService } from '../services/user.service';
 import { emailToken } from '../functions/email.token';
-import { sendHelpDiskMail, sendMail } from '../functions/send.mail';
+import { sendHelpDiskMail, sendMail, sendMailToken } from '../functions/send.mail';
 import { emailConfirmationLimiter, sendTokenLimiter } from '../functions/rate.limit';
 import { isAdmin, isUser, verifyToken, verifyUserId } from '../../core/middlewares';
 import { Controller, Delete, Get, Middleware, Post, Put } from '../../core/decorators';
@@ -72,29 +72,29 @@ export class UserController {
     }
   }
 
-  @Get('email-confirmation')
-  @Middleware([verifyToken, isUser, sendTokenLimiter, emailConfirmationLimiter])
-  async sendMailConfirmation(req: Request, resp: Response) {
-    const { user } = resp.locals;
-    const payload = {
-      isVerified: user.isVerified,
-      id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.eamil,
-      role: user.role,
-      image: user.image,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-    };
-    try {
-      const token = emailToken(payload);
-      sendMail(token, user);
-      resp.status(HttpStatus.OK).json({ massege: 'token sent' });
-    } catch (error) {
-      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
-    }
-  }
+  // @Get('email-confirmation')
+  // @Middleware([verifyToken, isUser, sendTokenLimiter, emailConfirmationLimiter])
+  // async sendMailConfirmation(req: Request, resp: Response) {
+  //   const { user } = resp.locals;
+  //   const payload = {
+  //     isVerified: user.isVerified,
+  //     id: user.id,
+  //     firstName: user.firstName,
+  //     lastName: user.lastName,
+  //     email: user.eamil,
+  //     role: user.role,
+  //     image: user.image,
+  //     createdAt: user.createdAt,
+  //     updatedAt: user.updatedAt,
+  //   };
+  //   try {
+  //     const token = emailToken(payload);
+  //     // sendMail(token, user);
+  //     resp.status(HttpStatus.OK).json({ massege: 'token sent' });
+  //   } catch (error) {
+  //     resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
+  //   }
+  // }
 
   @Get('get-by-email/:email')
   @Middleware([verifyToken, isAdmin])
@@ -158,7 +158,12 @@ export class UserController {
       if (email) {
         const { password, ...others } = user;
         const token = emailToken(others);
-        sendMail(token, user);
+        const payload = {
+          email: user.email,
+          userName: user.firstName,
+          token: token,
+        };
+        sendMailToken(payload);
       }
       const updated = await this.userService.updateUser(id, {
         id: user.id,
@@ -193,7 +198,7 @@ export class UserController {
       const user = await this.userService.getUser(id);
       const validatedOldPsw = await bcrypt.compare(oldPassword, user.password);
       if (!validatedOldPsw) {
-        resp.status(HttpStatus.UNAUTHORIZED).json({ message: 'Old password did not matches' });
+        resp.status(HttpStatus.UNAUTHORIZED).json({ message: 'Old password did not match' });
         return;
       }
       const validated = await bcrypt.compare(password, user.password);

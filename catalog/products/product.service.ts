@@ -24,6 +24,7 @@ export class ProductService {
   async getProducts(queryParams: ProductQueryDTO): Promise<PaginationDTO<ProductDTO>> {
     const {
       name,
+      artical,
       minPrice,
       maxPrice,
       desc,
@@ -54,10 +55,14 @@ export class ProductService {
       .leftJoinAndSelect('product.sizes', 'size')
       .leftJoinAndSelect('product.parameterProducts', 'parameterProducts')
       .leftJoinAndSelect('product.productVariants', 'productVariant')
-      .leftJoinAndSelect('productVariant.color', 'color');
+      .leftJoinAndSelect('productVariant.color', 'color')
+      .leftJoinAndSelect('productVariant.artical', 'artical');
 
     if (name) {
       queryBuilder.andWhere('product.name LIKE :name', { name: `%${name}%` });
+    }
+    if (artical) {
+      queryBuilder.andWhere('artical.name LIKE :artical', { artical: `%${artical}%` });
     }
     if (minPrice) {
       queryBuilder.andWhere('productVariant.price >= :minPrice', { minPrice: minPrice });

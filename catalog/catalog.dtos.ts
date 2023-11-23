@@ -6,6 +6,7 @@ import { BrandService } from './brands/brand.service';
 
 export interface ProductQueryDTO {
   readonly name?: string;
+  readonly artical?: string;
   readonly minPrice?: number;
   readonly maxPrice?: number;
   readonly desc?: string;

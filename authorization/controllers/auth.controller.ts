@@ -2,6 +2,7 @@ import * as bcrypt from 'bcrypt';
 import { Request, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
 import { singleton } from 'tsyringe';
+import generator from 'generate-password';
 import { Controller, Get, Middleware, Post, Put } from '../../core/decorators';
 import { User } from '../../core/entities';
 import { HttpStatus } from '../../core/lib/http-status';
@@ -63,12 +64,21 @@ export class AuthController {
   @Post('signup')
   async signUp(req: Request, resp: Response) {
     try {
+      const generatedPassword = generator.generate({
+        length: 8,
+        numbers: true,
+        symbols: true,
+        uppercase: true,
+        excludeSimilarCharacters: true,
+        strict: true,
+      });
       const salt = await bcrypt.genSalt(10);
-      const hashedPass = await bcrypt.hash(req.body.password, salt);
+      const hashedPass = await bcrypt.hash(generatedPassword, salt);
+      //  bcrypt.hash(req.body.password, salt);
       const payload = {
         id: '',
-        firstName: req.body.firstName,
-        lastName: req.body.lastName,
+        firstName: '', // req.body.firstName,
+        lastName: '', // req.body.lastName,
         email: req.body.email,
         isVerified: false,
         password: hashedPass,
@@ -85,19 +95,25 @@ export class AuthController {
       const newUser = await validation(new User(payload));
       const created = await this.userService.createUser(newUser);
       const { password, ...others } = created;
-      const tokenEmail = emailToken({ ...others });
+      // const tokenEmail = emailToken({ ...others });
       const accessTokenCreated = accessToken({ ...created, password: undefined });
       const refreshTokenCreated = refreshToken({ ...created, password: undefined });
-
-      sendMail(tokenEmail, created);
-      if (req.body.isSubscribed) {
-        this.userService.subscribeToNewsletter(newUser.firstName, newUser.email);
-      }
-      resp
-        .status(HttpStatus.CREATED)
-        .json({ user: { ...others }, accessToken: accessTokenCreated, refreshToken: refreshTokenCreated });
+      const emailPayload = {
+        email: created.email,
+        password: generatedPassword,
+      };
+      sendMail(emailPayload);
+      // if (req.body.isSubscribed) {
+      //   this.userService.subscribeToNewsletter(newUser.email.split('@')[0], newUser.email);
+      // }
+      resp.status(HttpStatus.CREATED).json({
+        user: { ...others },
+        accessToken: accessTokenCreated,
+        refreshToken: refreshTokenCreated,
+        password: generatedPassword, // todo remove this from here
+      });
     } catch (error) {
-      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: `somthing went wrong: ${error}` });
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
     }
   }
 
@@ -131,7 +147,7 @@ export class AuthController {
         refreshToken: refreshTokenCreated,
       });
     } catch (error) {
-      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: `somthing went wrong: ${error}` });
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
     }
   }
 
@@ -162,7 +178,7 @@ export class AuthController {
         resp.status(HttpStatus.CREATED).json({ accessToken: accessTokenCreated });
       });
     } catch (error) {
-      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: `somthing went wrong ${error}` });
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
     }
   }
 
@@ -178,7 +194,7 @@ export class AuthController {
       const { ACCESS_SECRET_TOKEN } = process.env;
       jwt.verify(token, ACCESS_SECRET_TOKEN, async (error: any, user: any) => {
         if (error) {
-          resp.status(HttpStatus.FORBIDDEN).json({ message: 'Access token is expired' });
+          resp.status(HttpStatus.FORBIDDEN).json(error);
           return;
         }
         const userInDB = await this.userService.getUser(user.id);
@@ -207,7 +223,7 @@ export class AuthController {
 
       resp.status(HttpStatus.OK).json({ message: `We sent you an email to ${email}` });
     } catch (error) {
-      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: `somthing went wrong: ${error}` });
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
     }
   }
 
@@ -261,7 +277,7 @@ export class AuthController {
           .json({ user: { ...others }, accessToken: accessTokenCreated, refreshToken: refreshTokenCreated });
       });
     } catch (error) {
-      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: `somthing went wrong: ${error}` });
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
     }
   }
 
@@ -279,7 +295,7 @@ export class AuthController {
     try {
       jwt.verify(token, EMAIL_SECRET_TOKEN, async (error: any, decoded: any) => {
         if (error) {
-          resp.status(HttpStatus.FORBIDDEN).json('Token is expired');
+          resp.status(HttpStatus.FORBIDDEN).json(error);
           return;
         }
 
@@ -311,7 +327,7 @@ export class AuthController {
           .json({ user: { ...others }, accessToken: accessTokenCreated, refreshToken: refreshTokenCreated });
       });
     } catch (error) {
-      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: `somthing went wrong: ${error}` });
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
     }
   }
 }

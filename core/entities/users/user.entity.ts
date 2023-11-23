@@ -7,20 +7,17 @@ export class User {
   @PrimaryGeneratedColumn()
   id: string;
 
-  @Column()
-  @IsNotEmpty()
+  @Column({ default: '' })
   firstName: string;
 
-  @Column()
-  @IsNotEmpty()
+  @Column({ default: '' })
   lastName: string;
 
   @Column({ unique: true })
   @IsNotEmpty()
   email: string;
 
-  @Column()
-  @IsNotEmpty()
+  @Column({ default: '' })
   password: string;
 
   @Column('boolean', { default: false })
