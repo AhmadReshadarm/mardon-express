@@ -11,7 +11,6 @@ export {
   Brand,
   Category,
   Color,
-  Artical,
   Size,
   Product,
   Parameter,

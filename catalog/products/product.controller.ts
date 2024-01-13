@@ -82,12 +82,12 @@ export class ProductController {
       const newProduct = await validation(new Product(req.body));
 
       tags ? (newProduct.tags = await this.tagService.getTagsByIds(tags.map((tag: Tag) => String(tag)))) : null;
-      sizes ? (newProduct.sizes = await this.sizeService.getSizesByIds(sizes.map((size: Size) => String(size)))) : null;
+      // sizes ? (newProduct.sizes = await this.sizeService.getSizesByIds(sizes.map((size: Size) => String(size)))) : null;
       const created = await this.productService.createProduct(newProduct);
 
       resp.status(HttpStatus.CREATED).json({ id: created.id });
     } catch (error) {
-      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: `somthing went wrong ${error}` });
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
     }
   }
 
@@ -106,7 +106,7 @@ export class ProductController {
 
       resp.status(HttpStatus.OK).json(updated);
     } catch (error) {
-      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: `somthing went wrong ${error}` });
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
     }
   }
 

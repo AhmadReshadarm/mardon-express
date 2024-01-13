@@ -8,4 +8,3 @@ export { Tag } from './tag.entity';
 export { ParameterProducts } from './parameterProducts.entity';
 export { ProductVariant } from './productVariant.entity';
 export { Foryou } from './foryou.entity';
-export { Artical } from './artical.entity';

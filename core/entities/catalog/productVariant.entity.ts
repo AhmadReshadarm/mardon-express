@@ -3,7 +3,6 @@ import { Column, Entity, JoinTable, ManyToOne, PrimaryGeneratedColumn } from 'ty
 import { OrderProduct } from '../orders';
 import { Color } from './color.entity';
 import { Product } from './product.entity';
-import { Artical } from './artical.entity';
 @Entity()
 export class ProductVariant {
   @PrimaryGeneratedColumn()
@@ -20,6 +19,9 @@ export class ProductVariant {
   // @Column({ nullable: true })
   // wholeSalePrice?: number;
 
+  @Column()
+  artical: string;
+
   @IsNotEmpty()
   @Column({ default: false })
   available: boolean;
@@ -28,11 +30,6 @@ export class ProductVariant {
   @ManyToOne(() => Color, color => color.productVariants, { cascade: true, nullable: true })
   @JoinTable()
   color: Color;
-
-  @IsNotEmpty()
-  @ManyToOne(() => Artical, artical => artical.productVariants, { cascade: true, nullable: true })
-  @JoinTable()
-  artical: Artical;
 
   @Column('text', { nullable: true })
   images: string;
@@ -44,7 +41,7 @@ export class ProductVariant {
     price: number;
     available: boolean;
     color: Color;
-    artical: Artical;
+    artical: string;
     oldPrice?: number;
     // wholeSalePrice?: number;
     images: string;
@@ -55,10 +52,10 @@ export class ProductVariant {
       this.product = args.product;
       this.price = args.price;
       this.oldPrice = args.oldPrice;
+      this.artical = args.artical;
       // this.wholeSalePrice = args.wholeSalePrice;
       this.available = args.available;
       this.color = args.color;
-      this.artical = args.artical;
       this.images = args.images;
     }
   }

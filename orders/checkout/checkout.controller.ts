@@ -25,6 +25,7 @@ export class CheckoutController {
     // }
     try {
       const { jwt } = resp.locals;
+
       const checkouts = await this.checkoutService.getCheckouts(req.query, req.headers.authorization!, jwt.id);
 
       resp.status(HttpStatus.OK).json(checkouts);

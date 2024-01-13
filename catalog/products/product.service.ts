@@ -55,14 +55,14 @@ export class ProductService {
       .leftJoinAndSelect('product.sizes', 'size')
       .leftJoinAndSelect('product.parameterProducts', 'parameterProducts')
       .leftJoinAndSelect('product.productVariants', 'productVariant')
-      .leftJoinAndSelect('productVariant.color', 'color')
-      .leftJoinAndSelect('productVariant.artical', 'artical');
+      .leftJoinAndSelect('productVariant.color', 'color');
+    // .leftJoinAndSelect('productVariant.artical', 'artical');
 
     if (name) {
       queryBuilder.andWhere('product.name LIKE :name', { name: `%${name}%` });
     }
     if (artical) {
-      queryBuilder.andWhere('artical.name LIKE :artical', { artical: `%${artical}%` });
+      queryBuilder.andWhere('productVariant.artical LIKE :artical', { artical: `%${artical}%` });
     }
     if (minPrice) {
       queryBuilder.andWhere('productVariant.price >= :minPrice', { minPrice: minPrice });
@@ -215,9 +215,9 @@ export class ProductService {
   }
 
   async createProduct(newProduct: Product): Promise<Product> {
-    if (newProduct.parameterProducts) {
-      await validation(newProduct.parameterProducts);
-    }
+    // if (newProduct.parameterProducts) {
+    //   await validation(newProduct.parameterProducts);
+    // }
 
     const created = await this.productRepository.save(new Product(newProduct));
     let counter = 0;

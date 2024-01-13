@@ -28,6 +28,24 @@ export class ImageController {
     }
   }
 
+  @Get('editor')
+  @Middleware([verifyToken, isAdmin])
+  async getImagesAll(req: Request, resp: Response) {
+    try {
+      const images = await this.imageService.getImages(req.query as any);
+      resp.status(HttpStatus.OK).json(
+        images.rows.map((image, index) => ({
+          url: `/api/images/${image.filename}`,
+          thumb: `/api/images/${image.filename}`,
+          id: image.id,
+          list: images.rows[index],
+        })),
+      );
+    } catch (error: any) {
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error.message);
+    }
+  }
+
   @Post()
   @Middleware([verifyToken, isUser, createDestination, multer.array('files')])
   async uploadImages(req: Request, resp: Response) {

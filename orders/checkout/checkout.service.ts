@@ -20,10 +20,7 @@ export class CheckoutService {
   private checkoutRepository: Repository<Checkout>;
   private subscribersRepository: Repository<Subscription>;
   private smptTransporter: Transporter;
-  constructor(
-    dataSource: DataSource,
-    private orderProductService: OrderProductService,
-  ) {
+  constructor(dataSource: DataSource, private orderProductService: OrderProductService) {
     this.checkoutRepository = dataSource.getRepository(Checkout);
     this.subscribersRepository = dataSource.getRepository(Subscription);
     this.smptTransporter = createTransport(transportConfig);
@@ -51,7 +48,6 @@ export class CheckoutService {
     if (userId) {
       queryBuilder.andWhere('checkout.userId = :userId', { userId: userId });
     }
-
     queryBuilder.orderBy(`checkout.${sortBy}`, orderBy).skip(offset).take(limit);
 
     const checkouts = await queryBuilder.getMany();
