@@ -1,8 +1,6 @@
-{
-  "app": [
-    {
-      "name": "authorization",
-      "script": "cd ./authorization && npm run dev"
-    }
-  ]
-}
+[
+  {
+    "name": "authorization",
+    "script": "cd ./authorization && npm run dev"
+  }
+]
