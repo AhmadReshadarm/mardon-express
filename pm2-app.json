@@ -2,51 +2,7 @@
   "app": [
     {
       "name": "authorization",
-      "script": "./authorization/dist/authorization/main.js"
-    },
-    {
-      "name": "banners",
-      "script": "./banners/dist/banners/main.js"
-    },
-    {
-      "name": "catelog",
-      "script": "./catalog/dist/catalog/main.js"
-    },
-    {
-      "name": "gateway",
-      "script": "./gateway/server.js"
-    },
-    {
-      "name": "images",
-      "script": "./images/dist/images/main.js"
-    },
-    {
-      "name": "mailer",
-      "script": "./mailer/dist/mailer/main.js"
-    },
-    {
-      "name": "news",
-      "script": "./news/dist/news/main.js"
-    },
-    {
-      "name": "orders",
-      "script": "./orders/dist/orders/main.js"
-    },
-    {
-      "name": "questions",
-      "script": "./questions/dist/questions/main.js"
-    },
-    {
-      "name": "reviews",
-      "script": "./reviews/dist/reviews/main.js"
-    },
-    {
-      "name": "swagger",
-      "script": "./swagger/dist/swagger/main.js"
-    },
-    {
-      "name": "wishlist",
-      "script": "./wishlist/dist/wishlist/main.js"
+      "script": "cd ./authorization && npm run dev"
     }
   ]
 }
