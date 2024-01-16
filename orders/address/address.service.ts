@@ -77,13 +77,19 @@ export class AddressService {
   }
 
   async getUserById(id: string, authToken: string): Promise<UserDTO | undefined> {
+    const options = {
+      url: `${process.env.USERS_DB}/users/inner/${id}`,
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json;charset=UTF-8',
+      },
+      data: {
+        secretKey: process.env.INNER_AUTH_CALL_SECRET_KEY,
+      },
+    };
     try {
-      const res = await axios.get(`${process.env.USERS_DB}/users/inner/${id}`, {
-        headers: {
-          Authorization: authToken!,
-        },
-      });
-
+      const res = await axios(options);
       return res.data;
     } catch (e: any) {
       if (e.name === 'AxiosError' && e.response.status === 403) {

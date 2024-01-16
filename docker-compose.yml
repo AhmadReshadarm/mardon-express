@@ -21,92 +21,92 @@ services:
     environment:
       PMA_HOST: ${MYSQL_HOST}
       PMA_PORT: 3306
-  authorization:
-    build:
-      context: .
-      dockerfile: ./authorization/Dockerfile
-    command: sh -c 'wait-for db:3306 -- npm run start'
-    depends_on:
-      - db
-  orders:
-    build:
-      context: .
-      dockerfile: ./orders/Dockerfile
-    command: sh -c 'wait-for db:3306 -- npm run start'
-    depends_on:
-      - db
-  catalog:
-    build:
-      context: .
-      dockerfile: ./catalog/Dockerfile
-    command: sh -c 'wait-for db:3306 -- npm run start'
-    depends_on:
-      - db
-  images:
-    build:
-      context: .
-      dockerfile: ./images/Dockerfile
-    command: sh -c 'wait-for db:3306 -- npm run start'
-    depends_on:
-      - db
-    volumes:
-      - images_data:/app/images/files
-  reviews:
-    build:
-      context: .
-      dockerfile: ./reviews/Dockerfile
-    command: sh -c 'wait-for db:3306 -- npm run start'
-    depends_on:
-      - db
-  questions:
-    build:
-      context: .
-      dockerfile: ./questions/Dockerfile
-    command: sh -c 'wait-for db:3306 -- npm run start'
-    depends_on:
-      - db
-  wishlists:
-    build:
-      context: .
-      dockerfile: ./wishlists/Dockerfile
-    command: sh -c 'wait-for db:3306 -- npm run start'
-    depends_on:
-      - db
-  banners:
-    build:
-      context: .
-      dockerfile: ./banners/Dockerfile
-    command: sh -c 'wait-for db:3306 -- npm run start'
-    depends_on:
-      - db
-  news:
-    build:
-      context: .
-      dockerfile: ./news/Dockerfile
-    command: sh -c 'wait-for db:3306 -- npm run start'
-    depends_on:
-      - db
-  mailer:
-    build:
-      context: .
-      dockerfile: ./mailer/Dockerfile
-    command: sh -c 'wait-for db:3306 -- npm run start'
-    depends_on:
-      - db
-  swagger:
-    build:
-      context: .
-      dockerfile: ./swagger/Dockerfile
-    command: sh -c 'npm run start'
-  gateway:
-    build:
-      context: .
-      dockerfile: ./gateway/Dockerfile
-    command: sh -c 'npm run start'
-    ports:
-      - '4010:4010'
-    expose:
-      - '4010'
+  # authorization:
+  #   build:
+  #     context: .
+  #     dockerfile: ./authorization/Dockerfile
+  #   command: sh -c 'wait-for db:3306 -- npm run start'
+  #   depends_on:
+  #     - db
+  # orders:
+  #   build:
+  #     context: .
+  #     dockerfile: ./orders/Dockerfile
+  #   command: sh -c 'wait-for db:3306 -- npm run start'
+  #   depends_on:
+  #     - db
+  # catalog:
+  #   build:
+  #     context: .
+  #     dockerfile: ./catalog/Dockerfile
+  #   command: sh -c 'wait-for db:3306 -- npm run start'
+  #   depends_on:
+  #     - db
+  # images:
+  #   build:
+  #     context: .
+  #     dockerfile: ./images/Dockerfile
+  #   command: sh -c 'wait-for db:3306 -- npm run start'
+  #   depends_on:
+  #     - db
+  #   volumes:
+  #     - images_data:/app/images/files
+  # reviews:
+  #   build:
+  #     context: .
+  #     dockerfile: ./reviews/Dockerfile
+  #   command: sh -c 'wait-for db:3306 -- npm run start'
+  #   depends_on:
+  #     - db
+  # questions:
+  #   build:
+  #     context: .
+  #     dockerfile: ./questions/Dockerfile
+  #   command: sh -c 'wait-for db:3306 -- npm run start'
+  #   depends_on:
+  #     - db
+  # wishlists:
+  #   build:
+  #     context: .
+  #     dockerfile: ./wishlists/Dockerfile
+  #   command: sh -c 'wait-for db:3306 -- npm run start'
+  #   depends_on:
+  #     - db
+  # banners:
+  #   build:
+  #     context: .
+  #     dockerfile: ./banners/Dockerfile
+  #   command: sh -c 'wait-for db:3306 -- npm run start'
+  #   depends_on:
+  #     - db
+  # news:
+  #   build:
+  #     context: .
+  #     dockerfile: ./news/Dockerfile
+  #   command: sh -c 'wait-for db:3306 -- npm run start'
+  #   depends_on:
+  #     - db
+  # mailer:
+  #   build:
+  #     context: .
+  #     dockerfile: ./mailer/Dockerfile
+  #   command: sh -c 'wait-for db:3306 -- npm run start'
+  #   depends_on:
+  #     - db
+  # swagger:
+  #   build:
+  #     context: .
+  #     dockerfile: ./swagger/Dockerfile
+  #   command: sh -c 'npm run start'
+  # gateway:
+  #   build:
+  #     context: .
+  #     dockerfile: ./gateway/Dockerfile
+  #   command: sh -c 'npm run start'
+  # ports:
+  #   - '4010:4010'
+  # expose:
+  #   - '4010'
 
 volumes:
   db_data:
