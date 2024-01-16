@@ -22,7 +22,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
-    "start:server": "npm-run-all --parallel auth:dev banners:dev catalog:dev gateway:start images:dev orders:dev questions:dev reviews:dev swagger:dev wishlists:dev mailer:dev news:dev"
+    "server": "npm-run-all --parallel auth:dev banners:dev catalog:dev gateway:start images:dev orders:dev questions:dev reviews:dev swagger:dev wishlists:dev mailer:dev news:dev"
   },
   "keywords": [],
   "author": "",
