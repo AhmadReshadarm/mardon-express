@@ -110,5 +110,5 @@ services:
 
 volumes:
   db_data:
-  images_data:
-    driver: local
+  # images_data:
+  #   driver: local
