@@ -1,6 +1,10 @@
 [
   {
+    "name": "gateway",
+    "script": "/gateway/server.js"
+  },
+  {
     "name": "authorization",
-    "script": "cd ./authorization && npm run dev"
+    "script": "/authorization/dist/authorization/main.js"
   }
 ]
