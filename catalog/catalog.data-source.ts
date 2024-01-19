@@ -1,6 +1,6 @@
 import { DataSource } from 'typeorm';
 import {
-  Brand,
+  // Brand,
   Category,
   Color,
   Parameter,
@@ -22,8 +22,9 @@ const dataSource = new DataSource({
   logging: true,
   synchronize: true,
   migrationsRun: false,
-  entities: [Product, Category, Color, Brand, Parameter, Tag, ParameterProducts, ProductVariant],
+  entities: [Product, Category, Color, Parameter, Tag, ParameterProducts, ProductVariant],
 });
 // Size,
 //  Foryou,
+// Brand,
 export default dataSource;

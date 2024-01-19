@@ -52,8 +52,8 @@ export class Category {
   @Column({ unique: true })
   url: string;
 
-  @OneToMany(() => Product, product => product.brand)
-  products?: Product[];
+  // @OneToMany(() => Product, product => product.brand)
+  // products?: Product[];
 
   constructor(args?: {
     name: string;

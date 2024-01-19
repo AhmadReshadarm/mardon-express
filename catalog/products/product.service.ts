@@ -34,8 +34,8 @@ export class ProductService {
       categories,
       parent,
       category,
-      brands,
-      brand,
+      // brands,
+      // brand,
       tags,
       tag,
       sortBy = 'name',
@@ -48,7 +48,7 @@ export class ProductService {
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.category', 'category')
       .leftJoinAndSelect('category.parent', 'categoryParent')
-      .leftJoinAndSelect('product.brand', 'brand')
+      // .leftJoinAndSelect('product.brand', 'brand')
       .leftJoinAndSelect('product.tags', 'tag')
       .leftJoinAndSelect('product.parameterProducts', 'parameterProducts')
       .leftJoinAndSelect('product.productVariants', 'productVariant')
@@ -90,12 +90,12 @@ export class ProductService {
     if (category) {
       queryBuilder.andWhere('category.url = :category', { category: category });
     }
-    if (brands) {
-      queryBuilder.andWhere('brand.url IN (:...brands)', { brands: brands });
-    }
-    if (brand) {
-      queryBuilder.andWhere('brand.url = :brand', { brand: brand });
-    }
+    // if (brands) {
+    //   queryBuilder.andWhere('brand.url IN (:...brands)', { brands: brands });
+    // }
+    // if (brand) {
+    //   queryBuilder.andWhere('brand.url = :brand', { brand: brand });
+    // }
     if (tags) {
       queryBuilder.andWhere('tag.url IN (:...tags)', { tags: tags });
     }
@@ -145,7 +145,7 @@ export class ProductService {
     const product = await this.productRepository
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.category', 'category')
-      .leftJoinAndSelect('product.brand', 'brand')
+      // .leftJoinAndSelect('product.brand', 'brand')
       .leftJoinAndSelect('product.tags', 'tag')
       .leftJoinAndSelect('category.parameters', 'parameter')
       .leftJoinAndSelect('product.parameterProducts', 'parameterProducts')
@@ -186,7 +186,7 @@ export class ProductService {
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.category', 'category')
       .leftJoinAndSelect('category.parent', 'categoryParent')
-      .leftJoinAndSelect('product.brand', 'brand')
+      // .leftJoinAndSelect('product.brand', 'brand')
       .leftJoinAndSelect('product.tags', 'tag')
       .leftJoinAndSelect('product.parameterProducts', 'parameterProducts')
       .leftJoinAndSelect('parameterProducts.parameter', 'parameter')

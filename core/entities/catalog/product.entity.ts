@@ -10,7 +10,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Brand } from './brand.entity';
+// import { Brand } from './brand.entity';
 import { Category } from './category.entity';
 import { ParameterProducts } from './parameterProducts.entity';
 import { ProductVariant } from './productVariant.entity';
@@ -42,9 +42,9 @@ export class Product {
   @ManyToOne(() => Category, category => category.id, { nullable: false, cascade: true, onDelete: 'CASCADE' })
   category: Category;
 
-  @IsNotEmpty()
-  @ManyToOne(() => Brand, brand => brand.id, { nullable: false, cascade: true, onDelete: 'CASCADE' })
-  brand: Brand;
+  // @IsNotEmpty()
+  // @ManyToOne(() => Brand, brand => brand.id, { nullable: false, cascade: true, onDelete: 'CASCADE' })
+  // brand: Brand;
 
   @IsNotEmpty()
   @Column({ unique: true })
@@ -67,7 +67,7 @@ export class Product {
     keywords: string;
     category: Category;
     url: string;
-    brand: Brand;
+    // brand: Brand;
     tags?: Tag[];
     parameterProducts: ParameterProducts[];
     productVariants: ProductVariant[];
@@ -79,7 +79,7 @@ export class Product {
       this.keywords = args.keywords;
       this.category = args.category;
       this.url = args.url;
-      this.brand = args.brand;
+      // this.brand = args.brand;
       this.tags = args.tags;
       this.parameterProducts = args.parameterProducts;
       this.productVariants = args.productVariants;

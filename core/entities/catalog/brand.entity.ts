@@ -21,8 +21,8 @@ export class Brand {
   @Column({ default: false })
   showOnMain: boolean;
 
-  @OneToMany(() => Product, product => product.brand)
-  products?: Product[];
+  // @OneToMany(() => Product, product => product.brand)
+  // products?: Product[];
 
   constructor(args?: { name: string; image: string; url: string; showOnMain: boolean }) {
     if (args) {
