@@ -56,10 +56,11 @@ export class ProductService {
 
     if (name) {
       queryBuilder.andWhere('product.name LIKE :name', { name: `%${name}%` });
+      queryBuilder.andWhere('productVariant.artical LIKE :name', { name: `${name}` });
     }
-    if (artical) {
-      queryBuilder.andWhere('productVariant.artical LIKE :artical', { artical: `%${artical}%` });
-    }
+    // if (artical) {
+    //   queryBuilder.andWhere('productVariant.artical LIKE :artical', { artical: `%${artical}%` });
+    // }
     if (minPrice) {
       queryBuilder.andWhere('productVariant.price >= :minPrice', { minPrice: minPrice });
     }
