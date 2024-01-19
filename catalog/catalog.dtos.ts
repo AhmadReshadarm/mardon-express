@@ -1,4 +1,4 @@
-import { Brand, Category, Color, Parameter, ParameterProducts, Review, Size, Tag } from '../core/entities';
+import { Brand, Category, Color, Parameter, ParameterProducts, Review, Tag } from '../core/entities';
 import { RatingDTO } from '../core/lib/dto';
 import { IsBoolean, IsNotEmpty, IsPositive, IsString } from 'class-validator';
 import { Column, CreateDateColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, UpdateDateColumn } from 'typeorm';
@@ -134,7 +134,6 @@ export interface ProductDTO {
   readonly brand: Brand;
   readonly colors?: Color[];
   readonly tags?: Tag[];
-  readonly sizes?: Size[];
   readonly rating: RatingDTO | null;
   readonly reviews: Review[] | null;
   readonly parameterProducts: ParameterProducts[] | null;

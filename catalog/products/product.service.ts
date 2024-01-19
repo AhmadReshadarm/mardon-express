@@ -38,8 +38,6 @@ export class ProductService {
       brand,
       tags,
       tag,
-      sizes,
-      size,
       sortBy = 'name',
       orderBy = 'DESC',
       offset = 0,
@@ -52,11 +50,9 @@ export class ProductService {
       .leftJoinAndSelect('category.parent', 'categoryParent')
       .leftJoinAndSelect('product.brand', 'brand')
       .leftJoinAndSelect('product.tags', 'tag')
-      .leftJoinAndSelect('product.sizes', 'size')
       .leftJoinAndSelect('product.parameterProducts', 'parameterProducts')
       .leftJoinAndSelect('product.productVariants', 'productVariant')
       .leftJoinAndSelect('productVariant.color', 'color');
-    // .leftJoinAndSelect('productVariant.artical', 'artical');
 
     if (name) {
       queryBuilder.andWhere('product.name LIKE :name', { name: `%${name}%` });
@@ -106,12 +102,6 @@ export class ProductService {
     if (tag) {
       queryBuilder.andWhere('tag.url = :tag', { tag: tag });
     }
-    if (sizes) {
-      queryBuilder.andWhere('size.url IN (:...sizes)', { sizes: sizes });
-    }
-    if (size) {
-      queryBuilder.andWhere('size.url = :size', { size: size });
-    }
 
     queryBuilder.orderBy(`product.${sortBy}`, orderBy).skip(offset).take(limit);
 
@@ -157,7 +147,6 @@ export class ProductService {
       .leftJoinAndSelect('product.category', 'category')
       .leftJoinAndSelect('product.brand', 'brand')
       .leftJoinAndSelect('product.tags', 'tag')
-      .leftJoinAndSelect('product.sizes', 'size')
       .leftJoinAndSelect('category.parameters', 'parameter')
       .leftJoinAndSelect('product.parameterProducts', 'parameterProducts')
       .leftJoinAndSelect('product.productVariants', 'productVariant')
@@ -199,7 +188,6 @@ export class ProductService {
       .leftJoinAndSelect('category.parent', 'categoryParent')
       .leftJoinAndSelect('product.brand', 'brand')
       .leftJoinAndSelect('product.tags', 'tag')
-      .leftJoinAndSelect('product.sizes', 'size')
       .leftJoinAndSelect('product.parameterProducts', 'parameterProducts')
       .leftJoinAndSelect('parameterProducts.parameter', 'parameter')
       .leftJoinAndSelect('product.productVariants', 'productVariant')
@@ -215,15 +203,9 @@ export class ProductService {
   }
 
   async createProduct(newProduct: Product): Promise<Product> {
-    // if (newProduct.parameterProducts) {
-    //   await validation(newProduct.parameterProducts);
-    // }
-
     const created = await this.productRepository.save(new Product(newProduct));
     let counter = 0;
     if (newProduct.productVariants) {
-      // newProduct.productVariants.map(async variant => {
-      //   await this.createProductVariant(variant, created);
       // });
       counter = 0;
 

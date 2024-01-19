@@ -15,7 +15,6 @@ import { Category } from './category.entity';
 import { ParameterProducts } from './parameterProducts.entity';
 import { ProductVariant } from './productVariant.entity';
 import { Tag } from './tag.entity';
-import { Size } from './size.entity';
 
 @Entity()
 export class Product {
@@ -55,10 +54,6 @@ export class Product {
   @JoinTable()
   tags?: Tag[];
 
-  @ManyToMany(() => Size, sizes => sizes.products, { cascade: true, nullable: true })
-  @JoinTable()
-  sizes?: Size[];
-
   @OneToMany(() => ParameterProducts, parameterProducts => parameterProducts.product)
   parameterProducts: ParameterProducts[];
 
@@ -74,7 +69,6 @@ export class Product {
     url: string;
     brand: Brand;
     tags?: Tag[];
-    sizes?: Size[];
     parameterProducts: ParameterProducts[];
     productVariants: ProductVariant[];
   }) {
@@ -87,7 +81,6 @@ export class Product {
       this.url = args.url;
       this.brand = args.brand;
       this.tags = args.tags;
-      this.sizes = args.sizes;
       this.parameterProducts = args.parameterProducts;
       this.productVariants = args.productVariants;
     }
