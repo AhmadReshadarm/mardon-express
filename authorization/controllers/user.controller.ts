@@ -88,7 +88,7 @@ export class UserController {
       const token = emailToken(payload);
       sendMailToken({
         userName: payload.email,
-        confirmationURL: `https://nbhoz.ru/profile/verify${token}`,
+        confirmationURL: `https://nbhoz.ru/profile/verify/${token}`,
         email: payload.email,
       });
       resp.status(HttpStatus.OK).json(payload);
