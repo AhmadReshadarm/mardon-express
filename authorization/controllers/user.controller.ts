@@ -91,7 +91,7 @@ export class UserController {
     try {
       const token = emailToken(payload);
       sendMailToken({
-        userName: payload.email.split('@')[0],
+        userName: payload.email,
         confirmationURL: `https://nbhoz.ru/profile/verify${token}`,
         email: payload.email,
       });
