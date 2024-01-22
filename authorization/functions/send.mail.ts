@@ -47,8 +47,8 @@ const sendMailToken = (payload: Payload) => {
       rejectUnauthorized: false,
     },
   });
-  const url = `${baseURL}/after-signup/${payload.token}`;
-  payload.confirmationURL = url;
+  // const url = `${baseURL}/after-signup/${payload.token}`;
+  // payload.confirmationURL = url;
   transporter.sendMail(
     {
       to: payload.email,

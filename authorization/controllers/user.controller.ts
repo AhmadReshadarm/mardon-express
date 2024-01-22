@@ -72,29 +72,34 @@ export class UserController {
     }
   }
 
-  // @Get('email-confirmation')
-  // @Middleware([verifyToken, isUser, sendTokenLimiter, emailConfirmationLimiter])
-  // async sendMailConfirmation(req: Request, resp: Response) {
-  //   const { user } = resp.locals;
-  //   const payload = {
-  //     isVerified: user.isVerified,
-  //     id: user.id,
-  //     firstName: user.firstName,
-  //     lastName: user.lastName,
-  //     email: user.eamil,
-  //     role: user.role,
-  //     image: user.image,
-  //     createdAt: user.createdAt,
-  //     updatedAt: user.updatedAt,
-  //   };
-  //   try {
-  //     const token = emailToken(payload);
-  //     // sendMail(token, user);
-  //     resp.status(HttpStatus.OK).json({ massege: 'token sent' });
-  //   } catch (error) {
-  //     resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
-  //   }
-  // }
+  @Get('email-confirmation')
+  @Middleware([verifyToken, isUser, sendTokenLimiter, emailConfirmationLimiter])
+  async sendMailConfirmation(req: Request, resp: Response) {
+    const { user } = resp.locals;
+    const payload = {
+      isVerified: false,
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.eamil,
+      role: user.role !== Role.Admin ? Role.User : Role.Admin,
+      image: user.image,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
+
+    try {
+      const token = emailToken(payload);
+      sendMailToken({
+        userName: payload.email.split('@')[0],
+        confirmationURL: `https://nbhoz.ru/profile/verify${token}`,
+        email: payload.email,
+      });
+      resp.status(HttpStatus.OK).json({ massege: 'token sent' });
+    } catch (error) {
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
+    }
+  }
 
   @Get('get-by-email/:email')
   @Middleware([verifyToken, isAdmin])

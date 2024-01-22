@@ -8,6 +8,7 @@ export interface Payload {
   confirmationURL?: string;
   token?: string;
 }
+
 const signupEmailTemplate = (user: User) => `
     <div>
       <h1>Добро пожаловать в <a href="https://nbhoz.ru">nbhoz.ru</a></h1>
@@ -19,11 +20,11 @@ const signupEmailTemplate = (user: User) => `
 
 const tokenEmailTemplate = (payload: Payload) => `
     <div>
-      <h1><b>${payload.userName}</b> добро пожаловать в ivill</h1>
+      <h1><b>${payload.userName}</b> добро пожаловать в NBHOZ</h1>
        <br />
       <span>
         Пожалуйста, нажмите на ссылку ниже, чтобы подтвердить свой адрес
-        электронной почты на <a href="https://ivill.ru">ivill.ru</a>
+        электронной почты на <a href="https://nbhoz.ru">nbhoz.ru</a>
       </span>
        <br />
       <a target="_blank" href="${payload.confirmationURL}">Нажмите здесь для подтверждения ${payload.email}</a>
