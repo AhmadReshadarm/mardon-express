@@ -102,12 +102,8 @@ export class CheckoutController {
         subject: `Заказ № ${created.id} на nbhoz.ru`,
         html: invoiceData,
       };
+
       const emailAdminPayload_2 = {
-        to: `exlon@hoz-mardon.ru`,
-        subject: `Заказ № ${created.id} на nbhoz.ru`,
-        html: invoiceData,
-      };
-      const emailAdminPayload_3 = {
         to: `armaan0080@yahoo.com`,
         subject: `Заказ № ${created.id} на nbhoz.ru`,
         html: invoiceData,
@@ -115,7 +111,6 @@ export class CheckoutController {
       await this.checkoutService.sendMail(emailUserPayload);
       await this.checkoutService.sendMail(emailAdminPayload);
       await this.checkoutService.sendMail(emailAdminPayload_2);
-      await this.checkoutService.sendMail(emailAdminPayload_3);
     } catch (error) {
       console.log(error);
     }
