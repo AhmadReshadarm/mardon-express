@@ -91,7 +91,7 @@ export class UserController {
         confirmationURL: `https://nbhoz.ru/profile/verify${token}`,
         email: payload.email,
       });
-      resp.status(HttpStatus.OK).json({ massege: 'token sent' });
+      resp.status(HttpStatus.OK).json(payload);
     } catch (error) {
       resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(`server error :${error}`);
     }
