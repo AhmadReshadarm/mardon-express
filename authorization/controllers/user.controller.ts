@@ -12,7 +12,7 @@ import { Role } from '../../core/enums/roles.enum';
 import { validation } from '../../core/lib/validator';
 import { User } from '../../core/entities';
 import { changePasswordLimiter } from '../functions/rate.limit';
-
+import nodemailer from 'nodemailer';
 @singleton()
 @Controller('/users')
 export class UserController {
@@ -71,9 +71,9 @@ export class UserController {
       resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: `somthing went wrong: ${error}` });
     }
   }
-
+  // sendTokenLimiter,
   @Post('email-confirmation')
-  @Middleware([verifyToken, isUser, sendTokenLimiter, emailConfirmationLimiter])
+  @Middleware([verifyToken, isUser, emailConfirmationLimiter])
   async sendMailConfirmation(req: Request, resp: Response) {
     const { user } = resp.locals;
     const payload = {
