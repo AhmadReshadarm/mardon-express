@@ -80,7 +80,7 @@ export class UserController {
       id: jwt.id,
       firstName: jwt.firstName,
       lastName: jwt.lastName,
-      email: jwt.eamil,
+      email: jwt.email,
       role: jwt.role !== Role.Admin ? Role.User : Role.Admin,
     };
 
