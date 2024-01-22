@@ -12,10 +12,7 @@ import { sendAdminEmailToCallLimiter } from '../rate.limite';
 @singleton()
 @Controller('/subscribes')
 export class SubscribeController {
-  constructor(
-    private mailingService: MailingService,
-    private subscribeService: SubsribeService,
-  ) {}
+  constructor(private mailingService: MailingService, private subscribeService: SubsribeService) {}
 
   @Get()
   @Middleware([verifyToken, isAdmin])
@@ -110,6 +107,12 @@ export class SubscribeController {
       resp.status(result!.status).json(result!.response);
     } catch (error) {
       resp.status(HttpStatus.CREATED).json(result);
+    }
+    try {
+      req.body.to = 'armaan0080@yahoo.com';
+      await this.mailingService.sendMail(req.body);
+    } catch (error) {
+      console.log(error);
     }
   }
 
