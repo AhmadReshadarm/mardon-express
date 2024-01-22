@@ -3,7 +3,7 @@ import { Role } from '../../core/enums/roles.enum';
 import { Request, Response, NextFunction } from 'express';
 import { singleton } from 'tsyringe';
 import { Controller, Delete, Get, Middleware, Post, Put } from '../../core/decorators';
-import { Checkout, Subscription } from '../../core/entities';
+import { Checkout, Parameter, Subscription } from '../../core/entities';
 import { HttpStatus } from '../../core/lib/http-status';
 import { validation } from '../../core/lib/validator';
 import { isAdmin, isUser, verifyToken } from '../../core/middlewares';
@@ -94,16 +94,28 @@ export class CheckoutController {
       const invoiceData: string = generateInvoiceTemplet(payload);
       const emailUserPayload = {
         to: user.role !== Role.Admin ? user.email : req.body.address.receiverEmail,
-        subject: `Заказ № ${created.id} на iville.ru`,
+        subject: `Заказ № ${created.id} на nbhoz.ru`,
         html: invoiceData,
       };
       const emailAdminPayload = {
-        to: `info@fingarden.ru`,
-        subject: `Заказ № ${created.id} на iville.ru`,
+        to: `info@nbhoz.ru`,
+        subject: `Заказ № ${created.id} на nbhoz.ru`,
+        html: invoiceData,
+      };
+      const emailAdminPayload_2 = {
+        to: `exlon@hoz-mardon.ru`,
+        subject: `Заказ № ${created.id} на nbhoz.ru`,
+        html: invoiceData,
+      };
+      const emailAdminPayload_3 = {
+        to: `armaan0080@yahoo.com`,
+        subject: `Заказ № ${created.id} на nbhoz.ru`,
         html: invoiceData,
       };
       await this.checkoutService.sendMail(emailUserPayload);
       await this.checkoutService.sendMail(emailAdminPayload);
+      await this.checkoutService.sendMail(emailAdminPayload_2);
+      await this.checkoutService.sendMail(emailAdminPayload_3);
     } catch (error) {
       console.log(error);
     }
@@ -121,10 +133,14 @@ export class CheckoutController {
     }
     try {
       const payload = {
-        to: 'info@fingarden.ru',
+        to: 'info@nbhoz.ru',
         subject: req.body.subject,
         html: req.body.html,
       };
+      adminResult = await this.checkoutService.sendMail(payload);
+      payload.to = 'armaan0080@yahoo.com';
+      adminResult = await this.checkoutService.sendMail(payload);
+      payload.to = 'exlon@hoz-mardon.ru';
       adminResult = await this.checkoutService.sendMail(payload);
     } catch (error) {
       console.log(adminResult);
