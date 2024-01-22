@@ -71,9 +71,9 @@ export class UserController {
       resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: `somthing went wrong: ${error}` });
     }
   }
-  // sendTokenLimiter,
+  // sendTokenLimiter, emailConfirmationLimiter
   @Post('email-confirmation')
-  @Middleware([verifyToken, isUser, emailConfirmationLimiter])
+  @Middleware([verifyToken, isUser])
   async sendMailConfirmation(req: Request, resp: Response) {
     const { user } = resp.locals;
     const payload = {
@@ -97,7 +97,7 @@ export class UserController {
       });
       resp.status(HttpStatus.OK).json({ massege: 'token sent' });
     } catch (error) {
-      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(`server error :${error}`);
     }
   }
 
