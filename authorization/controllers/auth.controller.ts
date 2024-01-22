@@ -103,9 +103,9 @@ export class AuthController {
         password: generatedPassword,
       };
       sendMail(emailPayload);
-      // if (req.body.isSubscribed) {
-      //   this.userService.subscribeToNewsletter(newUser.email.split('@')[0], newUser.email);
-      // }
+      if (req.body.isSubscribed) {
+        this.userService.subscribeToNewsletter(newUser.email.split('@')[0], newUser.email);
+      }
       resp.status(HttpStatus.CREATED).json({
         user: { ...others },
         accessToken: accessTokenCreated,

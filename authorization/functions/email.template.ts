@@ -23,7 +23,7 @@ const tokenEmailTemplate = (payload: Payload) => `
       <h1><b>${payload.userName}</b> добро пожаловать в NBHOZ</h1>
        <br />
       <span>
-        Пожалуйста, нажмите на ссылку ниже, чтобы подтвердить свой адрес
+        Пожалуйста, нажмите на ссылку ниже, чтобы подтвердить ваш адрес
         электронной почты на <a href="https://nbhoz.ru">nbhoz.ru</a>
       </span>
        <br />

@@ -72,7 +72,7 @@ export class UserController {
     }
   }
 
-  @Get('email-confirmation')
+  @Post('email-confirmation')
   @Middleware([verifyToken, isUser, sendTokenLimiter, emailConfirmationLimiter])
   async sendMailConfirmation(req: Request, resp: Response) {
     const { user } = resp.locals;
