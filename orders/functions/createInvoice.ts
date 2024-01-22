@@ -74,8 +74,8 @@ const generateInvoiceTemplet = (payload: templetDTO) => {
             <span>${product.productVariant?.color?.name}</span>
           </div>
           <div>
-            <span>Размер:</span>
-            <span>${product.productSize}</span>
+           <span>Артикул:</span>
+            <span>${product.productVariant?.artical}</span>
           </div>
        `,
       )}
