@@ -12,7 +12,6 @@ import { Role } from '../../core/enums/roles.enum';
 import { validation } from '../../core/lib/validator';
 import { User } from '../../core/entities';
 import { changePasswordLimiter } from '../functions/rate.limit';
-import nodemailer from 'nodemailer';
 @singleton()
 @Controller('/users')
 export class UserController {
@@ -75,17 +74,14 @@ export class UserController {
   @Post('email-confirmation')
   @Middleware([verifyToken, isUser])
   async sendMailConfirmation(req: Request, resp: Response) {
-    const { user } = resp.locals;
+    const { jwt } = resp.locals;
     const payload = {
       isVerified: false,
-      id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.eamil,
-      role: user.role !== Role.Admin ? Role.User : Role.Admin,
-      image: user.image,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
+      id: jwt.id,
+      firstName: jwt.firstName,
+      lastName: jwt.lastName,
+      email: jwt.eamil,
+      role: jwt.role !== Role.Admin ? Role.User : Role.Admin,
     };
 
     try {
