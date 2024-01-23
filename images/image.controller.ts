@@ -113,9 +113,9 @@ export class ImageController {
     await axios
       .all(endpoints.map(endpoint => axios.get(endpoint)))
       .then(
-        axios.spread(async ({ data: products }, { data: brands }, { data: categories }) => {
-          if (products.length > 0 || brands.length > 0 || categories.length > 0) {
-            resp.status(HttpStatus.FORBIDDEN).json({ products, brands, categories });
+        axios.spread(async ({ data: products }, { data: categories }) => {
+          if (products.length > 0 || categories.length > 0) {
+            resp.status(HttpStatus.FORBIDDEN).json({ products, categories });
             return;
           }
           const removed = await this.imageService.removeImage(fileName);
