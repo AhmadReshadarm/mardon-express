@@ -129,7 +129,7 @@ export class ImageController {
         }),
       )
       .catch(error => {
-        resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: `somthing went wrong: ${error}` });
+        resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
       });
   }
   // @Delete('/inner:fileName')
