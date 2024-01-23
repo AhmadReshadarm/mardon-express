@@ -106,7 +106,7 @@ export class ImageController {
     const { fileName } = req.params;
     let endpoints = [
       `${process.env.PRODUCT_DB}/products?image=${fileName}`,
-      `${process.env.PRODUCT_DB}/brands?image=${fileName}`,
+      // `${process.env.PRODUCT_DB}/brands?image=${fileName}`,
       `${process.env.PRODUCT_DB}/categories?image=${fileName}`,
     ];
 
