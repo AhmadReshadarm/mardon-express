@@ -55,11 +55,11 @@ export class ProductService {
       .leftJoinAndSelect('productVariant.color', 'color');
 
     if (name) {
-      queryBuilder.andWhere('product.name LIKE :name', { name: `%${name}%` });
+      queryBuilder
+        .andWhere('product.name LIKE :name', { name: `%${name}%` })
+        .orWhere('productVariant.artical LIKE :artical', { artical: `%${name}%` });
     }
-    // if (artical) {
-    //   queryBuilder.andWhere('productVariant.artical LIKE :artical', { artical: `%${artical}%` });
-    // }
+
     if (minPrice) {
       queryBuilder.andWhere('productVariant.price >= :minPrice', { minPrice: minPrice });
     }
