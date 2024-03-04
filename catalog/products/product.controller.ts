@@ -25,9 +25,10 @@ export class ProductController {
   @Get('google')
   async getProductsGoogle(req: Request, resp: Response) {
     try {
-      const products = await this.productService.getProducts({ limit: 100000 });
+      const products: any = await this.productService.getProducts({ limit: 100000 });
+      const filtered = products.rows.filter((product: any) => product?.productVariants![0]?.price !== 1);
 
-      const item = products.rows.map((product: any) => {
+      const item = filtered.map((product: any) => {
         return {
           'g:id': `${product?.productVariants![0]?.artical}`,
           'g:title': `${product.name}`,
