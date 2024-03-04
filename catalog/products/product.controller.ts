@@ -39,11 +39,11 @@ export class ProductController {
           'g:availability': 'in stock',
           'g:price': `${product?.productVariants![0]?.price}.00 RUB`,
           'g:google_product_category': `${product.category?.parent?.name} > ${product.category?.name}`,
-          // 'g:additional_image_link': `https://nbhoz.ru/api/images/${
-          //   product?.productVariants![0]?.images?.split(', ')[
-          //     product?.productVariants![0]?.images?.split(', ').length - 1
-          //   ]
-          // }`,
+          'g:additional_image_link': `https://nbhoz.ru/api/images/${
+            product?.productVariants![0]?.images?.split(', ')[
+              product?.productVariants![0]?.images?.split(', ').length - 1
+            ]
+          }`,
         };
       });
 
