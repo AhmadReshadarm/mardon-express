@@ -134,7 +134,7 @@ export class ProductService {
     if (categories) {
       queryBuilder.andWhere('category.url IN (:...categories)', { categories: categories });
     }
-
+    //  TODO add price rang based on tags, colors
     return queryBuilder
       .select('MIN(productVariant.price)', 'minPrice')
       .addSelect('MAX(productVariant.price)', 'maxPrice')

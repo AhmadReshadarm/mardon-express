@@ -7,7 +7,7 @@ import { Product, Tag } from '../../core/entities';
 import { TagService } from '../tags/tag.service';
 import { Controller, Delete, Get, Middleware, Post, Put } from '../../core/decorators';
 import { isAdmin, verifyToken } from '../../core/middlewares';
-
+import { create } from 'xmlbuilder2';
 @singleton()
 @Controller('/products')
 export class ProductController {
@@ -18,6 +18,51 @@ export class ProductController {
     try {
       const products = await this.productService.getProducts(req.query);
       resp.json(products);
+    } catch (error) {
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: `somthing went wrong: ${error}` });
+    }
+  }
+  @Get('google')
+  async getProductsGoogle(req: Request, resp: Response) {
+    try {
+      const products = await this.productService.getProducts({ limit: 100000 });
+      const item = products.rows.map((product: any) => {
+        return {
+          'g:id': `${product?.productVariants![0]?.artical}`,
+          'g:title': `<![CDATA[${product.name}]]>`,
+          'g:description': `<![CDATA[${product.shortDesc}]]>`,
+          'g:link': `https://nbhoz.ru/product/${product.url}`,
+          'g:image_link': `https://nbhoz.ru/api/images/${product?.productVariants![0]?.images?.split(', ')[0]}`,
+          'g:condition': 'new',
+          'g:availability': 'in stock',
+          'g:price': `${product?.productVariants![0]?.price}.00 RUB`,
+          'g:google_product_category': `${product.category?.parent?.name} > ${product.category?.name}`,
+          'g:additional_image_link': `https://nbhoz.ru/api/images/${
+            product?.productVariants![0]?.images?.split(', ')[
+              product?.productVariants![0]?.images?.split(', ').length - 1
+            ]
+          }`,
+        };
+      });
+
+      const payload = {
+        rss: {
+          '@xmlns:g': 'http://base.google.com/ns/1.0',
+          '@version': '2.0',
+          'channel': {
+            title: 'NBHOZ - интернет магазин хозтовары оптом. по выгодным ценам',
+            link: 'https://nbhoz.ru',
+            description:
+              'NBHOZ, Дешевые хозтовары оптом в интернет магазине nbhoz в Москве и все Россия, купить Кухонная утварь, Товары для сервировки стола, Уборочный инвентарь, Товары для ванной комнаты, Прихожая, Товары для ремонта, Товары для дачи и сада, Спортивные и туристические товары, Бытовая техника, Товары для животных, Декор для дома',
+            item,
+          },
+        },
+      };
+      const root = create(payload);
+
+      const xml = root.end({ prettyPrint: true });
+      resp.setHeader('Content-Type', 'text/xml');
+      resp.send(xml);
     } catch (error) {
       resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: `somthing went wrong: ${error}` });
     }
