@@ -26,22 +26,23 @@ export class ProductController {
   async getProductsGoogle(req: Request, resp: Response) {
     try {
       const products = await this.productService.getProducts({ limit: 100000 });
+
       const item = products.rows.map((product: any) => {
         return {
           'g:id': `${product?.productVariants![0]?.artical}`,
-          'g:title': `<![CDATA[${product.name}]]>`,
-          'g:description': `<![CDATA[${product.shortDesc}]]>`,
+          'g:title': `${product.name}`,
+          'g:description': `${product.desc}`,
           'g:link': `https://nbhoz.ru/product/${product.url}`,
           'g:image_link': `https://nbhoz.ru/api/images/${product?.productVariants![0]?.images?.split(', ')[0]}`,
           'g:condition': 'new',
           'g:availability': 'in stock',
           'g:price': `${product?.productVariants![0]?.price}.00 RUB`,
           'g:google_product_category': `${product.category?.parent?.name} > ${product.category?.name}`,
-          'g:additional_image_link': `https://nbhoz.ru/api/images/${
-            product?.productVariants![0]?.images?.split(', ')[
-              product?.productVariants![0]?.images?.split(', ').length - 1
-            ]
-          }`,
+          // 'g:additional_image_link': `https://nbhoz.ru/api/images/${
+          //   product?.productVariants![0]?.images?.split(', ')[
+          //     product?.productVariants![0]?.images?.split(', ').length - 1
+          //   ]
+          // }`,
         };
       });
 
