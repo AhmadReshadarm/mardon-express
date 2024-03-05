@@ -135,7 +135,7 @@ export class CheckoutController {
       adminResult = await this.checkoutService.sendMail(payload);
       payload.to = 'armaan0080@yahoo.com';
       adminResult = await this.checkoutService.sendMail(payload);
-      payload.to = 'exlon@hoz-mardon.ru';
+      payload.to = 'exelon@hoz-mardon.ru';
       adminResult = await this.checkoutService.sendMail(payload);
     } catch (error) {
       console.log(adminResult);
