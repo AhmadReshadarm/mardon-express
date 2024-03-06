@@ -12,10 +12,7 @@ import { ProductService } from '../products/product.service';
 @singleton()
 @Controller('/categories')
 export class CategoryController {
-  constructor(
-    private categoryService: CategoryService,
-    private productService: ProductService,
-  ) {}
+  constructor(private categoryService: CategoryService, private productService: ProductService) {}
 
   @Get()
   async getCategories(req: Request, resp: Response) {
@@ -31,9 +28,17 @@ export class CategoryController {
   @Get('categoriesTree')
   async getCategoriesTree(req: Request, resp: Response) {
     try {
-      const categories = await this.categoryService.getCategoriesTree();
+      // const categories = await this.categoryService.getCategoriesTree();
+      const categoriesTree = await this.categoryService.getCategories({ limit: 1000 });
+      const filteredCategoriesTree: Category[] = [];
+      categoriesTree.rows.map(category => {
+        if (category.parent === null) {
+          filteredCategoriesTree.push(category);
+        }
+      });
 
-      resp.json(categories);
+      // resp.json(categories);
+      resp.status(HttpStatus.OK).json(filteredCategoriesTree);
     } catch (error) {
       resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: `somthing went wrong ${error}` });
     }

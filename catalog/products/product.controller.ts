@@ -3,7 +3,7 @@ import { singleton } from 'tsyringe';
 import { HttpStatus } from '../../core/lib/http-status';
 import { validation } from '../../core/lib/validator';
 import { ProductService } from './product.service';
-import { Product, ProductVariant, Tag } from '../../core/entities';
+import { Category, Product, ProductVariant, Tag } from '../../core/entities';
 import { TagService } from '../tags/tag.service';
 import { Controller, Delete, Get, Middleware, Post, Put } from '../../core/decorators';
 import { isAdmin, verifyToken } from '../../core/middlewares';
@@ -87,10 +87,16 @@ export class ProductController {
     try {
       const products: any = await this.productService.getProducts({ limit: 100000 });
       const filtered = products.rows.filter((product: any) => product?.productVariants![0]?.price !== 1);
-      const categoriesDB = await this.categoryService.getCategoriesTree();
+      const categoriesTree = await this.categoryService.getCategories({ limit: 1000 });
+      const filteredCategoriesTree: Category[] = [];
+      categoriesTree.rows.map(category => {
+        if (category.parent === null) {
+          filteredCategoriesTree.push(category);
+        }
+      });
 
       const categoryArray: any = [];
-      categoriesDB.map(category => {
+      filteredCategoriesTree.map(category => {
         categoryArray.push({
           '@id': category.id,
           '#': category.name,

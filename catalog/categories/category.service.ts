@@ -12,10 +12,7 @@ export class CategoryService {
   private categoryTreeRepository: TreeRepository<Category>;
   private parametersRepository: Repository<Parameter>;
 
-  constructor(
-    dataSource: DataSource,
-    private parameterService: ParameterService,
-  ) {
+  constructor(dataSource: DataSource, private parameterService: ParameterService) {
     this.categoryRepository = dataSource.getRepository(Category);
     this.categoryTreeRepository = dataSource.getTreeRepository(Category);
     this.parametersRepository = dataSource.getRepository(Parameter);
@@ -117,15 +114,6 @@ export class CategoryService {
       relations: ['parameters'],
     });
 
-    await this.categoryRepository.save({
-      ...category,
-      name: categoryDTO.name,
-      desc: categoryDTO.desc,
-      parent: categoryDTO.parent,
-      url: categoryDTO.url,
-      image: categoryDTO.image,
-    });
-
     category.parameters.forEach(parameter => {
       const curParameter = categoryDTO.parameters.find(({ id }) => id == parameter.id);
 
@@ -161,8 +149,19 @@ export class CategoryService {
       }
     }
 
-    return {
+    const updated = await this.categoryRepository.save({
       ...category,
+      ...categoryDTO,
+      // name: categoryDTO.name,
+      // desc: categoryDTO.desc,
+      // parent: categoryDTO.parent,
+      // url: categoryDTO.url,
+      // image: categoryDTO.image,
+    });
+
+    return {
+      // ...category,
+      ...updated,
       parameters: parameters.map(({ id, name }) => ({ id, name })),
     };
   }

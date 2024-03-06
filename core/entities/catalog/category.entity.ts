@@ -60,6 +60,7 @@ export class Category {
     desc: string;
     image: string;
     parent?: Category;
+    children: Category[];
     url: string;
     parameters: Parameter[];
   }) {
@@ -69,6 +70,7 @@ export class Category {
       this.image = args.image;
       this.url = args.url;
       this.parent = args.parent;
+      this.children = args.children;
       this.parameters = args.parameters;
     }
   }
