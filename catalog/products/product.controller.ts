@@ -48,7 +48,7 @@ export class ProductController {
         return {
           'g:id': `${product?.productVariants![0]?.artical}`,
           'g:title': `${product.name}`,
-          'g:description': `${product.desc}`,
+          'g:description': `${product?.desc?.includes('|') ? product.desc.split('|')[1] : product.desc}`,
           'g:link': `https://nbhoz.ru/product/${product.url}`,
           'g:image_link': `https://nbhoz.ru/api/images/${product?.productVariants![0]?.images?.split(', ')[0]}`,
           'g:condition': 'new',
@@ -115,7 +115,7 @@ export class ProductController {
           'currencyId': 'RUR',
           'categoryId': product.category.id,
           'picture': `https://nbhoz.ru/api/images/${product?.productVariants![0]?.images?.split(', ')[0]}`,
-          'description': product.desc,
+          'description': product?.desc?.includes('|') ? product.desc.split('|')[1] : product.desc,
         };
       });
       const currentDate = new Date();
