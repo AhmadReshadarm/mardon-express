@@ -151,6 +151,77 @@ export class ProductController {
     }
   }
 
+  @Get('yandex-webmaster')
+  async getProductsYandexWebMaster(req: Request, resp: Response) {
+    try {
+      const products: any = await this.productService.getProducts({ limit: 100000 });
+      const filtered = products.rows.filter((product: any) => product?.productVariants![0]?.price !== 1);
+      const categoriesTree = await this.categoryService.getCategories({ limit: 1000 });
+      const filteredCategoriesTree: Category[] = [];
+      categoriesTree.rows.map(category => {
+        if (category.parent === null) {
+          filteredCategoriesTree.push(category);
+        }
+      });
+
+      const categoryArray: any = [];
+      filteredCategoriesTree.map(category => {
+        categoryArray.push({
+          '@id': category.id,
+          '#': category.name,
+        });
+        category.children.map(childCategory => {
+          categoryArray.push({ '@id': childCategory.id, '@parentId': category.id, '#': childCategory.name });
+        });
+      });
+
+      const offer = filtered.map((product: Product) => {
+        return {
+          '@id': product.id,
+          'name': product.name,
+          'url': `https://nbhoz.ru/product/${product.url}`,
+          'price': product.productVariants[0].price,
+          'currencyId': 'RUR',
+          'categoryId': product.category.id,
+          'picture': `https://nbhoz.ru/api/images/${product?.productVariants![0]?.images?.split(', ')[0]}`,
+          'description': product?.desc?.includes('|')
+            ? product.desc.split('|')[1].split('Минимальная сумма заказа')[0]
+            : product.desc.split('Минимальная сумма заказа')[0],
+        };
+      });
+      const currentDate = new Date();
+      const payload = {
+        yml_catalog: {
+          '@date': `${currentDate.getFullYear()}-${currentDate.getMonth()}-${currentDate.getDate()} ${currentDate.getHours()}:${currentDate.getMinutes()}`,
+          'shop': {
+            name: 'NBHOZ - интернет магазин хозтовары оптом. по выгодным ценам',
+            company: 'NBHOZ',
+            url: 'https://nbhoz.ru',
+            version: '1.0',
+            email: 'info@nbhoz.ru',
+            currencies: {
+              currency: 'RUR',
+              rate: '1',
+            },
+            categories: {
+              category: categoryArray,
+            },
+            offers: {
+              offer,
+            },
+          },
+        },
+      };
+      const root = create(payload);
+
+      const xml = root.end({ prettyPrint: true });
+      resp.setHeader('Content-Type', 'text/xml');
+      resp.send(xml);
+    } catch (error) {
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: `somthing went wrong: ${error}` });
+    }
+  }
+
   @Get('priceRange')
   async getProductsPriceRange(req: Request, resp: Response) {
     try {
