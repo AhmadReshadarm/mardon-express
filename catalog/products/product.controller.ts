@@ -9,6 +9,7 @@ import { Controller, Delete, Get, Middleware, Post, Put } from '../../core/decor
 import { isAdmin, verifyToken } from '../../core/middlewares';
 import { create } from 'xmlbuilder2';
 import { CategoryService } from '../../catalog/categories/category.service';
+import { ProductDTO } from 'catalog/catalog.dtos';
 @singleton()
 @Controller('/products')
 export class ProductController {
@@ -56,6 +57,7 @@ export class ProductController {
           'g:price': `${product?.productVariants![0]?.price}.00 RUB`,
           'g:google_product_category': `${product.category?.parent?.name} > ${product.category?.name}`,
           'g:additional_image_link': addetinalImages,
+          'g:rating': product?.rating?.avg,
         };
       });
 
@@ -106,7 +108,7 @@ export class ProductController {
         });
       });
 
-      const offer = filtered.map((product: Product) => {
+      const offer = filtered.map((product: any) => {
         return {
           '@id': product.id,
           'name': product.name,
@@ -116,6 +118,7 @@ export class ProductController {
           'categoryId': product.category.id,
           'picture': `https://nbhoz.ru/api/images/${product?.productVariants![0]?.images?.split(', ')[0]}`,
           'description': product?.desc?.includes('|') ? product.desc.split('|')[1] : product.desc,
+          'rating': product?.rating?.avg,
         };
       });
       const currentDate = new Date();
@@ -175,7 +178,7 @@ export class ProductController {
         });
       });
 
-      const offer = filtered.map((product: Product) => {
+      const offer = filtered.map((product: any) => {
         return {
           '@id': product.id,
           'name': product.name,
@@ -187,6 +190,7 @@ export class ProductController {
           'description': product?.desc?.includes('|')
             ? product.desc.split('|')[1].split('Минимальная сумма заказа')[0]
             : product.desc.split('Минимальная сумма заказа')[0],
+          'rating': product?.rating?.avg,
         };
       });
       const currentDate = new Date();
@@ -202,6 +206,77 @@ export class ProductController {
             currencies: {
               currency: 'RUR',
               rate: '1',
+            },
+            categories: {
+              category: categoryArray,
+            },
+            offers: {
+              offer,
+            },
+          },
+        },
+      };
+      const root = create(payload);
+
+      const xml = root.end({ prettyPrint: true });
+      resp.setHeader('Content-Type', 'text/xml');
+      resp.send(xml);
+    } catch (error) {
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: `somthing went wrong: ${error}` });
+    }
+  }
+
+  @Get('vk')
+  async getProductsVK(req: Request, resp: Response) {
+    try {
+      const products: any = await this.productService.getProducts({ limit: 100000 });
+      const filtered = products.rows.filter((product: any) => product?.productVariants![0]?.price !== 1);
+      const categoriesTree = await this.categoryService.getCategories({ limit: 1000 });
+      const filteredCategoriesTree: Category[] = [];
+      categoriesTree.rows.map(category => {
+        if (category.parent === null) {
+          filteredCategoriesTree.push(category);
+        }
+      });
+
+      const categoryArray: any = [];
+      filteredCategoriesTree.map(category => {
+        categoryArray.push({
+          '@id': category.id,
+          '#': category.name,
+        });
+        category.children.map(childCategory => {
+          categoryArray.push({ '@id': childCategory.id, '@parentId': category.id, '#': childCategory.name });
+        });
+      });
+
+      const offer = filtered.map((product: any) => {
+        return {
+          '@id': product.id,
+          '@available': 'true',
+          'price': product.productVariants[0].price,
+          'currencyId': 'RUB',
+          'categoryId': product.category.id,
+          'name': product.name,
+          'description': product?.desc?.includes('|') ? product.desc.split('|')[1] : product.desc,
+          'picture': `https://nbhoz.ru/api/images/${product?.productVariants![0]?.images?.split(', ')[0]}`,
+          'url': `https://nbhoz.ru/product/${product.url}`,
+          'rating': product?.rating?.avg,
+        };
+      });
+      const currentDate = new Date();
+      const payload = {
+        yml_catalog: {
+          '@date': `${currentDate.getFullYear()}-${currentDate.getMonth()}-${currentDate.getDate()} ${currentDate.getHours()}:${currentDate.getMinutes()}`,
+          'shop': {
+            name: 'NBHOZ - интернет магазин хозтовары оптом. по выгодным ценам',
+            company: 'NBHOZ',
+            url: 'https://nbhoz.ru',
+            currencies: {
+              currency: {
+                '@id': 'RUB',
+                '@rate': '1',
+              },
             },
             categories: {
               category: categoryArray,
