@@ -8,6 +8,7 @@ import { TagService } from '../tags/tag.service';
 import { Controller, Delete, Get, Middleware, Post, Put } from '../../core/decorators';
 import { isAdmin, verifyToken } from '../../core/middlewares';
 import { create } from 'xmlbuilder2';
+import builder from 'xmlbuilder2';
 import { CategoryService } from '../../catalog/categories/category.service';
 import { ProductDTO } from 'catalog/catalog.dtos';
 @singleton()
@@ -74,7 +75,12 @@ export class ProductController {
           },
         },
       };
-      const root = create(payload);
+
+      const opts = {
+        encoding: 'utf-8',
+      };
+
+      const root = create(opts, payload);
 
       const xml = root.end({ prettyPrint: true });
       resp.setHeader('Content-Type', 'text/xml');
@@ -144,7 +150,11 @@ export class ProductController {
           },
         },
       };
-      const root = create(payload);
+      const opts = {
+        encoding: 'utf-8',
+      };
+
+      const root = create(opts, payload);
 
       const xml = root.end({ prettyPrint: true });
       resp.setHeader('Content-Type', 'text/xml');
@@ -216,7 +226,11 @@ export class ProductController {
           },
         },
       };
-      const root = create(payload);
+      const opts = {
+        encoding: 'utf-8',
+      };
+
+      const root = create(opts, payload);
 
       const xml = root.end({ prettyPrint: true });
       resp.setHeader('Content-Type', 'text/xml');
@@ -267,7 +281,11 @@ export class ProductController {
       const currentDate = new Date();
       const payload = {
         yml_catalog: {
-          '@date': `${currentDate.getFullYear()}-${currentDate.getMonth()}-${currentDate.getDate()} ${currentDate.getHours()}:${currentDate.getMinutes()}`,
+          '@date': `${currentDate.getFullYear()}-${
+            currentDate.getMonth() < 10 ? '0' + currentDate.getMonth() : currentDate.getMonth()
+          }-${
+            currentDate.getDate() < 10 ? '0' + currentDate.getDate() : currentDate.getDate()
+          } ${currentDate.getHours()}:${currentDate.getMinutes()}`,
           'shop': {
             name: 'NBHOZ - интернет магазин хозтовары оптом. по выгодным ценам',
             company: 'NBHOZ',
@@ -287,7 +305,11 @@ export class ProductController {
           },
         },
       };
-      const root = create(payload);
+      const opts = {
+        encoding: 'utf-8',
+      };
+
+      const root = create(opts, payload);
 
       const xml = root.end({ prettyPrint: true });
       resp.setHeader('Content-Type', 'text/xml');
