@@ -8,9 +8,10 @@ import { TagService } from '../tags/tag.service';
 import { Controller, Delete, Get, Middleware, Post, Put } from '../../core/decorators';
 import { isAdmin, verifyToken } from '../../core/middlewares';
 import { create } from 'xmlbuilder2';
-import builder from 'xmlbuilder2';
 import { CategoryService } from '../../catalog/categories/category.service';
-import { ProductDTO } from 'catalog/catalog.dtos';
+import * as fs from 'fs';
+import path from 'path';
+
 @singleton()
 @Controller('/products')
 export class ProductController {
@@ -240,8 +241,9 @@ export class ProductController {
     }
   }
 
-  @Get('vk')
+  @Get('vk/:fileName')
   async getProductsVK(req: Request, resp: Response) {
+    const { fileName } = req.params;
     try {
       const products: any = await this.productService.getProducts({ limit: 100000 });
       const filtered = products.rows.filter((product: any) => product?.productVariants![0]?.price !== 1);
@@ -312,8 +314,17 @@ export class ProductController {
       const root = create(opts, payload);
 
       const xml = root.end({ prettyPrint: true });
-      resp.setHeader('Content-Type', 'text/xml');
-      resp.send(xml);
+
+      await fs.writeFile(`${__dirname}/vk.xml`, xml, { flag: 'w' }, err => {
+        if (err) console.log(err);
+      });
+
+      const loc = `${__dirname}/${fileName}`;
+      resp.writeHead(200, {
+        'Content-Type': 'text/xml',
+      });
+      let filestream = fs.createReadStream(loc);
+      filestream.pipe(resp);
     } catch (error) {
       resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: `somthing went wrong: ${error}` });
     }

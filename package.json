@@ -11,7 +11,7 @@
     "orders:dev": "cd ./orders && npm run dev",
     "questions:dev": "cd ./questions && npm run dev",
     "reviews:dev": "cd ./reviews && npm run dev",
-    "swagger:dev": "cd ./swagger && npm run dev",
+    "swagger:dev": "cd ./swagger && npm run start",
     "wishlists:dev": "cd ./wishlists && npm run dev",
     "mailer:dev": "cd ./mailer && npm run dev",
     "news:dev": "cd ./news && npm run dev",
@@ -34,7 +34,7 @@
     "reviews:production": "cd ./reviews && npm run build && cp ./.env ./dist/reviews && cd ./dist/reviews && pm2 start main.js --name 'reviews' -- start",
     "swagger:production": "cd ./swagger && npm run build && cp ./.env ./dist/swagger && cd ./dist/swagger && pm2 start main.js --name 'swagger' -- start",
     "wishlists:production": "cd ./wishlists && npm run build && cp ./.env ./dist/wishlists && cd ./dist/wishlists && pm2 start main.js --name 'wishlists' -- start",
-    "dev:server": "npm-run-all --parallel auth:dev banners:dev catalog:dev gateway:start images:dev orders:dev questions:dev reviews:dev swagger:dev wishlists:dev mailer:dev news:dev",
+    "dev:server": "npm-run-all --parallel auth:dev banners:dev catalog:dev gateway:start images:dev orders:dev questions:dev reviews:dev wishlists:dev mailer:dev news:dev",
     "pm2-start": "npm-run-all --sequential gateway:production auth:production banners:production catelog:production images:production mailer:production news:production orders:production questions:production reviews:production swagger:production wishlists:production"
   },
   "keywords": [],
