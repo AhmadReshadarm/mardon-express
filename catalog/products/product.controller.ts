@@ -117,14 +117,14 @@ export class ProductController {
 
       const offer = filtered.map((product: any) => {
         return {
-          '@id': product.id,
-          'name': product.name,
-          'url': `https://nbhoz.ru/product/${product.url}`,
-          'price': product.productVariants[0].price,
+          '@id': product?.id,
+          'name': product?.name,
+          'url': `https://nbhoz.ru/product/${product?.url}`,
+          'price': product?.productVariants[0]?.price,
           'currencyId': 'RUR',
-          'categoryId': product.category.id,
+          'categoryId': product?.category?.id,
           'picture': `https://nbhoz.ru/api/images/${product?.productVariants![0]?.images?.split(', ')[0]}`,
-          'description': product?.desc?.includes('|') ? product.desc.split('|')[1] : product.desc,
+          'description': product?.desc?.includes('|') ? product?.desc.split('|')[1] : product?.desc,
           'rating': product?.rating?.avg,
         };
       });
