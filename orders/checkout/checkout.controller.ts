@@ -92,25 +92,27 @@ export class CheckoutController {
         cart: req.body.basket,
       };
       const invoiceData: string = generateInvoiceTemplet(payload);
-      const emailUserPayload = {
-        to: user.role !== Role.Admin ? user.email : req.body.address.receiverEmail,
-        subject: `Заказ № ${created.id} на nbhoz.ru`,
-        html: invoiceData,
-      };
+
       const emailAdminPayload = {
         to: `info@nbhoz.ru`,
         subject: `Заказ № ${created.id} на nbhoz.ru`,
         html: invoiceData,
       };
+      await this.checkoutService.sendMail(emailAdminPayload);
 
       const emailAdminPayload_2 = {
         to: `armaan0080@yahoo.com`,
         subject: `Заказ № ${created.id} на nbhoz.ru`,
         html: invoiceData,
       };
-      await this.checkoutService.sendMail(emailUserPayload);
-      await this.checkoutService.sendMail(emailAdminPayload);
       await this.checkoutService.sendMail(emailAdminPayload_2);
+
+      const emailUserPayload = {
+        to: user.role !== Role.Admin ? user.email : req.body.address.receiverEmail,
+        subject: `Заказ № ${created.id} на nbhoz.ru`,
+        html: invoiceData,
+      };
+      await this.checkoutService.sendMail(emailUserPayload);
     } catch (error) {
       console.log(error);
     }

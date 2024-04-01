@@ -326,7 +326,7 @@ export class ProductController {
       let filestream = fs.createReadStream(loc);
       filestream.pipe(resp);
     } catch (error) {
-      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: `somthing went wrong: ${error}` });
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
     }
   }
 
@@ -337,7 +337,7 @@ export class ProductController {
 
       resp.json(products);
     } catch (error) {
-      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: `somthing went wrong: ${error}` });
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
     }
   }
 
@@ -349,7 +349,7 @@ export class ProductController {
 
       resp.json(product);
     } catch (error) {
-      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: `somthing went wrong: ${error}` });
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
     }
   }
 
@@ -360,7 +360,7 @@ export class ProductController {
 
       resp.json(products);
     } catch (error) {
-      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: `somthing went wrong: ${error}` });
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
     }
   }
 
@@ -372,7 +372,7 @@ export class ProductController {
 
       resp.json(product);
     } catch (error) {
-      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: `somthing went wrong: ${error}` });
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
     }
   }
 
@@ -419,7 +419,7 @@ export class ProductController {
 
       resp.status(HttpStatus.OK).json(removed);
     } catch (error) {
-      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: `somthing went wrong ${error}` });
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
     }
   }
 }
