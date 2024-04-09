@@ -124,19 +124,26 @@ export class ReviewService {
   async getNewReviewId(): Promise<string> {
     const lastElement = await this.reviewRepository.find({
       order: { id: 'DESC' },
-      take: 1,
+      // take: 1,
+    });
+    const leatestElement = lastElement.sort(function (a, b) {
+      return Number(b.id) - Number(a.id);
     });
 
-    return lastElement[0] ? String(+lastElement[0].id + 1) : String(1);
+    return lastElement[0] ? String(+leatestElement[0].id + 1) : String(1);
   }
 
   async getNewReactionId(): Promise<string> {
     const lastElement = await this.reactionRepository.find({
       order: { id: 'DESC' },
-      take: 1,
+      // take: 1,
     });
 
-    return lastElement[0] ? String(+lastElement[0].id + 1) : String(1);
+    const leatestElement = lastElement.sort(function (a, b) {
+      return Number(b.id) - Number(a.id);
+    });
+
+    return lastElement[0] ? String(+leatestElement[0].id + 1) : String(1);
   }
 
   async createReview(newReview: Review): Promise<ReviewDTO> {

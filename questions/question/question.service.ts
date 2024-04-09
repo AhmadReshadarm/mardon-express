@@ -17,10 +17,7 @@ export class QuestionService {
   private questionRepository: Repository<Question>;
   private reactionRepository: Repository<ReactionQuestion>;
 
-  constructor(
-    dataSource: DataSource,
-    private commentService: CommentService,
-  ) {
+  constructor(dataSource: DataSource, private commentService: CommentService) {
     this.questionRepository = dataSource.getRepository(Question);
     this.reactionRepository = dataSource.getRepository(ReactionQuestion);
   }
@@ -126,10 +123,14 @@ export class QuestionService {
   async getNewQuestionId(): Promise<string> {
     const lastElement = await this.questionRepository.find({
       order: { id: 'DESC' },
-      take: 1,
+      // take: 1,
     });
 
-    return lastElement[0] ? String(+lastElement[0].id + 1) : String(1);
+    const leatestElement = lastElement.sort(function (a, b) {
+      return Number(b.id) - Number(a.id);
+    });
+
+    return lastElement[0] ? String(+leatestElement[0].id + 1) : String(1);
   }
 
   async getNewReactionId(): Promise<string> {
