@@ -98,10 +98,13 @@ export class AuthController {
       // const tokenEmail = emailToken({ ...others });
       const accessTokenCreated = accessToken({ ...created, password: undefined });
       const refreshTokenCreated = refreshToken({ ...created, password: undefined });
+      const token = emailToken({ ...created, password: undefined });
       const emailPayload = {
         email: created.email,
         password: generatedPassword,
+        confirmationURL: `https://nbhoz.ru/profile/verify/${token}`,
       };
+
       sendMail(emailPayload);
       if (req.body.isSubscribed) {
         this.userService.subscribeToNewsletter(newUser.email.split('@')[0], newUser.email);

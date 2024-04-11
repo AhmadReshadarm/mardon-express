@@ -1,6 +1,7 @@
 export interface User {
   email: string;
   password: string;
+  confirmationURL?: string;
 }
 export interface Payload {
   email: string;
@@ -15,6 +16,7 @@ const signupEmailTemplate = (user: User) => `
       <div><span>Ваш логин: ${user.email}</span></div>
       <div><span>Ваш пароль: ${user.password}</span></div>
        <br />
+      <a target="_blank" href="${user.confirmationURL}">Нажмите здесь для подтверждения ${user.email}</a>
     </div>
 `;
 
