@@ -57,7 +57,8 @@ export class ProductService {
     if (name) {
       queryBuilder
         .andWhere('product.name LIKE :name', { name: `%${name}%` })
-        .orWhere('productVariant.artical LIKE :artical', { artical: `%${name}%` });
+        .orWhere('productVariant.artical LIKE :artical', { artical: `%${name}%` })
+        .orWhere('product.desc LIKE :desc', { desc: `%${name}%` });
     }
 
     if (minPrice) {
