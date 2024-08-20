@@ -53,12 +53,23 @@ export class ProductService {
       .leftJoinAndSelect('product.parameterProducts', 'parameterProducts')
       .leftJoinAndSelect('product.productVariants', 'productVariant')
       .leftJoinAndSelect('productVariant.color', 'color');
-
+    //  added LOWER for better resluts
     if (name) {
-      queryBuilder
-        .andWhere('product.name LIKE :name', { name: `%${name}%` })
-        .orWhere('productVariant.artical LIKE :artical', { artical: `%${name}%` })
-        .orWhere('product.desc LIKE :desc', { desc: `%${name}%` });
+      name.split(' ').forEach((term, index) => {
+        index === 0
+          ? queryBuilder
+              .andWhere('LOWER(product.name) LIKE LOWER(:term)', { term: `%${term}%` })
+              .orWhere('LOWER(productVariant.artical) LIKE LOWER(:artical)', { artical: `%${term}%` })
+              .orWhere('LOWER(product.desc) LIKE LOWER(:desc)', { desc: `%${term}%` })
+          : queryBuilder
+              .andWhere('LOWER(product.name) LIKE LOWER(:term)', { term: `%${term}%` })
+              .orWhere('LOWER(productVariant.artical) LIKE LOWER(:artical)', { artical: `%${term}%` })
+              .orWhere('LOWER(product.desc) LIKE LOWER(:desc)', { desc: `%${term}%` });
+      });
+      // queryBuilder
+      //   .andWhere('LOWER(product.name) LIKE LOWER(:name)', { name: `%${name}%` })
+      //   .orWhere('LOWER(productVariant.artical) LIKE LOWER(:artical)', { artical: `%${name}%` })
+      //   .orWhere('LOWER(product.desc) LIKE LOWER(:desc)', { desc: `%${name}%` });
     }
 
     if (minPrice) {
