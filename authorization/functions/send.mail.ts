@@ -20,7 +20,7 @@ const sendMail = (user: User) => {
   transporter.sendMail(
     {
       to: user.email,
-      from: 'info@nbhoz.ru',
+      from: 'NBHOZ <info@nbhoz.ru>',
       subject: `Добро пожаловать в nbhoz.ru ${user.email}`,
       html: signupEmailTemplate(user),
     },
@@ -52,7 +52,7 @@ const sendMailToken = (payload: Payload) => {
   transporter.sendMail(
     {
       to: payload.email,
-      from: 'info@nbhoz.ru',
+      from: 'NBHOZ <info@nbhoz.ru>',
       subject: `Добро пожаловать в nbhoz.ru ${payload.email}`,
       html: tokenEmailTemplate(payload),
     },
@@ -83,7 +83,7 @@ const sendMailResetPsw = (token: any, user: any) => {
   transporter.sendMail(
     {
       to: user.email,
-      from: 'info@nbhoz.ru',
+      from: 'NBHOZ <info@nbhoz.ru>',
       subject: `Сбросить пароль для ${user.email}`,
       html: resetPswEmailTemplate(user.firstName, user.email, url),
     },
@@ -114,7 +114,7 @@ const sendHelpDiskMail = (userEmail: string, adminEmail: string, text: string) =
   transporter.sendMail(
     {
       to: adminEmail,
-      from: 'info@nbhoz.ru',
+      from: 'NBHOZ <info@nbhoz.ru>',
       subject: `Вопрос от ${userEmail}`,
       html: `<div><p>Вопрос от <a href="mailto:${userEmail}">${userEmail}</a>:</p></div><div><p>${text}</p></div>`,
     },
