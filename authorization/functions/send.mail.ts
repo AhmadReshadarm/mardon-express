@@ -116,7 +116,7 @@ const sendHelpDiskMail = (userEmail: string, adminEmail: string, text: string) =
       to: adminEmail,
       from: 'NBHOZ <info@nbhoz.ru>',
       subject: `Вопрос от ${userEmail}`,
-      html: `<div><p>Вопрос от <a href="mailto:${userEmail}">${userEmail}</a>:</p></div><div><p>${text}</p></div>`,
+      html: `<div><p>Вопрос от <a href="mailto:${userEmail}">${userEmail}</a>:</p></div><br /><div><p>${text}</p></div>`,
     },
     (error, info) => {
       if (error) {

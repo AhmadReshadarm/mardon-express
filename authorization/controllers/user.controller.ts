@@ -231,7 +231,8 @@ export class UserController {
     const { email, text } = req.body;
     try {
       const admins = await this.userService.getUsers({ role: Role.Admin });
-      admins.rows.map(admin => {
+      const filteredAdmins = admins.rows.filter(admin => admin.email !== 'admin@admin.ru');
+      filteredAdmins.map(admin => {
         sendHelpDiskMail(email, admin.email, text);
       });
       resp.send(HttpStatus.OK);
