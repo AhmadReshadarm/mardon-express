@@ -246,6 +246,8 @@ export class QuestionService {
       id: user?.id,
       firstName: user?.firstName,
       lastName: user?.lastName,
+      role: user?.role,
+      email: user?.email,
     };
 
     return {
