@@ -10,7 +10,6 @@ import { isAdmin, verifyToken } from '../../core/middlewares';
 import { create } from 'xmlbuilder2';
 import { CategoryService } from '../../catalog/categories/category.service';
 import * as fs from 'fs';
-import path from 'path';
 
 @singleton()
 @Controller('/products')
@@ -47,13 +46,13 @@ export class ProductController {
 
       const item = filtered.map((product: any) => {
         const images = getProductVariantsImages(product.productVariants);
-        const addetinalImages = images.map(image => `https://nbhoz.ru/api/images/${image}`);
+        const addetinalImages = images.map(image => `http://5.35.93.60:4010/images/${image}`);
         return {
           'g:id': `${product?.productVariants![0]?.artical}`,
           'g:title': `${product.name}`,
           'g:description': `${product?.desc?.includes('|') ? product.desc.split('|')[1] : product.desc}`,
           'g:link': `https://nbhoz.ru/product/${product.url}`,
-          'g:image_link': `https://nbhoz.ru/api/images/${product?.productVariants![0]?.images?.split(', ')[0]}`,
+          'g:image_link': `http://5.35.93.60:4010/images/${product?.productVariants![0]?.images?.split(', ')[0]}`,
           'g:condition': 'new',
           'g:availability': 'in stock',
           'g:price': `${product?.productVariants![0]?.price}.00 RUB`,
