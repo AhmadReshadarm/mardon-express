@@ -320,7 +320,7 @@ export class CheckoutService {
         result = {
           status: HttpStatus.OK,
           response: {
-            message: `Mail was unsuccessfull to be sent to ${options.to}`,
+            message: `Mail was successfull to be sent to ${options.to}`,
           },
         };
       },

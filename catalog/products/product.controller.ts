@@ -3,7 +3,7 @@ import { singleton } from 'tsyringe';
 import { HttpStatus } from '../../core/lib/http-status';
 import { validation } from '../../core/lib/validator';
 import { ProductService } from './product.service';
-import { Category, Product, ProductVariant, Tag } from '../../core/entities';
+import { Category, Product, Tag } from '../../core/entities';
 import { TagService } from '../tags/tag.service';
 import { Controller, Delete, Get, Middleware, Post, Put } from '../../core/decorators';
 import { isAdmin, verifyToken } from '../../core/middlewares';
@@ -29,23 +29,33 @@ export class ProductController {
       resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: `somthing went wrong: ${error}` });
     }
   }
+
+  // getProductVariantsImages(productVariants?: ProductVariant[]) {
+  //   let images: string[] = [];
+  //   productVariants?.forEach(variant => {
+  //     const variantImages = variant.images ? variant.images.split(', ') : [];
+  //     images = images.concat(variantImages);
+  //   });
+  //   return images;
+  // }
+
   @Get('google')
   async getProductsGoogle(req: Request, resp: Response) {
     try {
       const products: any = await this.productService.getProducts({ limit: 100000 });
       const filtered = products.rows.filter((product: any) => product?.productVariants![0]?.price !== 1);
 
-      const getProductVariantsImages = (productVariants?: ProductVariant[]) => {
-        let images: string[] = [];
-        productVariants?.forEach(variant => {
-          const variantImages = variant.images ? variant.images.split(', ') : [];
-          images = images.concat(variantImages);
-        });
-        return images;
-      };
+      // const getProductVariantsImages = (productVariants?: ProductVariant[]) => {
+      //   let images: string[] = [];
+      //   productVariants?.forEach(variant => {
+      //     const variantImages = variant.images ? variant.images.split(', ') : [];
+      //     images = images.concat(variantImages);
+      //   });
+      //   return images;
+      // };
 
       const item = filtered.map((product: any) => {
-        const images = getProductVariantsImages(product.productVariants);
+        const images = this.productService.getProductVariantsImages(product.productVariants);
         const addetinalImages = images.map(image => `https://nbhoz.ru/api/images/${image}`);
         return {
           'g:id': `${product?.productVariants![0]?.artical}`,
@@ -168,9 +178,11 @@ export class ProductController {
   async getProductsYandexWebMaster(req: Request, resp: Response) {
     try {
       const products: any = await this.productService.getProducts({ limit: 100000 });
+      const parameters = await this.productService.getParameters({ limit: 1000 });
       const filtered = products.rows.filter((product: any) => product?.productVariants![0]?.price !== 1);
       const categoriesTree = await this.categoryService.getCategories({ limit: 1000 });
       const filteredCategoriesTree: Category[] = [];
+
       categoriesTree.rows.map(category => {
         if (category.parent === null) {
           filteredCategoriesTree.push(category);
@@ -188,7 +200,17 @@ export class ProductController {
         });
       });
 
-      const offer = filtered.map((product: any) => {
+      const offer = filtered.map((product: Product) => {
+        const images = this.productService.getProductVariantsImages(product.productVariants);
+        const picture: any = [];
+        images.map(image => {
+          picture.push({ '#': `https://nbhoz.ru/api/images/${image}` });
+        });
+        const param: any = [];
+        product.parameterProducts.map(paramObj => {
+          const parameter: any = parameters.rows.find(parameter => parameter.id === paramObj.parameterId);
+          param.push({ '@name': `${parameter.name}`, '#': paramObj.value });
+        });
         return {
           '@id': product.id,
           'name': product.name,
@@ -196,26 +218,64 @@ export class ProductController {
           'price': product.productVariants[0].price,
           'currencyId': 'RUR',
           'categoryId': product.category.id,
-          'picture': `https://nbhoz.ru/api/images/${product?.productVariants![0]?.images?.split(', ')[0]}`,
-          'description': product?.desc?.includes('|')
-            ? product.desc.split('|')[1].split('Минимальная сумма заказа')[0]
-            : product.desc.split('Минимальная сумма заказа')[0],
-          'rating': product?.rating?.avg,
+          'vendor': 'NBHOZ',
+          // 'picture': `https://nbhoz.ru/api/images/${product?.productVariants![0]?.images?.split(', ')[0]}`,
+          picture,
+          'description': `<![CDATA[${
+            product?.desc?.includes('|')
+              ? product.desc.split('|')[1].split('Минимальная сумма заказа')[0]
+              : product.desc.split('Минимальная сумма заказа')[0]
+          }]]>`,
+          param,
+          'store': 'true',
+          'pickup': 'true',
+          'delivery': 'false',
+          'pickup-options': {
+            option: {
+              '@cost': '0',
+              '@days': '0',
+            },
+          },
+          // 'rating': product?.rating?.avg,
         };
       });
+      const toIsoString = (date: any) => {
+        let tzo = -date.getTimezoneOffset(),
+          dif = tzo >= 0 ? '+' : '-',
+          pad = function (num: number) {
+            return (num < 10 ? '0' : '') + num;
+          };
+
+        return (
+          date.getFullYear() +
+          '-' +
+          pad(date.getMonth() + 1) +
+          '-' +
+          pad(date.getDate()) +
+          'T' +
+          pad(date.getHours()) +
+          ':' +
+          pad(date.getMinutes()) +
+          ':' +
+          pad(date.getSeconds()) +
+          dif +
+          pad(Math.floor(Math.abs(tzo) / 60)) +
+          ':' +
+          pad(Math.abs(tzo) % 60)
+        );
+      };
       const currentDate = new Date();
+      const dataWithTimeZone = toIsoString(currentDate);
       const payload = {
         yml_catalog: {
-          '@date': `${currentDate.getFullYear()}-${currentDate.getMonth()}-${currentDate.getDate()} ${currentDate.getHours()}:${currentDate.getMinutes()}`,
+          '@date': dataWithTimeZone,
           'shop': {
-            name: 'NBHOZ - интернет магазин хозтовары оптом. по выгодным ценам',
+            name: 'NBHOZ - интернет магазин хозтовары. по выгодным ценам',
             company: 'NBHOZ',
             url: 'https://nbhoz.ru',
-            version: '1.0',
-            email: 'info@nbhoz.ru',
             currencies: {
-              currency: 'RUR',
-              rate: '1',
+              '@currency': 'RUR',
+              '@rate': '1',
             },
             categories: {
               category: categoryArray,

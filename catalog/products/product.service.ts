@@ -2,9 +2,9 @@ import { injectable } from 'tsyringe';
 import { DataSource, Equal, Repository } from 'typeorm';
 import { CustomExternalError } from '../../core/domain/error/custom.external.error';
 import { ErrorCode } from '../../core/domain/error/error.code';
-import { ParameterProducts, Product, ProductVariant, Review, User } from '../../core/entities';
+import { ParameterProducts, Product, ProductVariant, Review, User, Parameter } from '../../core/entities';
 import { HttpStatus } from '../../core/lib/http-status';
-import { ProductDTO, ProductQueryDTO } from '../catalog.dtos';
+import { ParameterQueryDTO, ProductDTO, ProductQueryDTO } from '../catalog.dtos';
 import { PaginationDTO, RatingDTO } from '../../core/lib/dto';
 import axios from 'axios';
 import { validation } from '../../core/lib/validator';
@@ -14,11 +14,13 @@ export class ProductService {
   private productRepository: Repository<Product>;
   private parameterProductsRepository: Repository<ParameterProducts>;
   private productVariantRepository: Repository<ProductVariant>;
+  private parameterRepository: Repository<Parameter>;
 
   constructor(dataSource: DataSource) {
     this.productRepository = dataSource.getRepository(Product);
     this.parameterProductsRepository = dataSource.getRepository(ParameterProducts);
     this.productVariantRepository = dataSource.getRepository(ProductVariant);
+    this.parameterRepository = dataSource.getRepository(Parameter);
   }
 
   async getProducts(queryParams: ProductQueryDTO): Promise<PaginationDTO<ProductDTO>> {
@@ -457,5 +459,44 @@ export class ProductService {
         throw new CustomExternalError([ErrorCode.FORBIDDEN], HttpStatus.FORBIDDEN);
       }
     }
+  }
+
+  async getParameter(id: string): Promise<Parameter> {
+    const parameter = await this.parameterRepository.findOneOrFail({
+      where: {
+        id: Equal(id),
+      },
+    });
+
+    return parameter;
+  }
+
+  getProductVariantsImages(productVariants?: ProductVariant[]) {
+    let images: string[] = [];
+    productVariants?.forEach(variant => {
+      const variantImages = variant.images ? variant.images.split(', ') : [];
+      images = images.concat(variantImages);
+    });
+    return images;
+  }
+
+  async getParameters(queryParams: ParameterQueryDTO): Promise<PaginationDTO<Parameter>> {
+    const { name, categories, sortBy = 'id', orderBy = 'ASC', offset = 0, limit = 500 } = queryParams;
+
+    const queryBuilder = await this.parameterRepository.createQueryBuilder('parameter');
+
+    if (name) {
+      queryBuilder.andWhere('parameter.name LIKE :name', { name: `%${name}%` });
+    }
+    if (categories) {
+      queryBuilder.andWhere('category.url IN (:...categories)', { categories: JSON.parse(categories) });
+    }
+
+    queryBuilder.orderBy(`parameter.${sortBy}`, orderBy).skip(offset).take(limit);
+
+    return {
+      rows: await queryBuilder.getMany(),
+      length: await queryBuilder.getCount(),
+    };
   }
 }

@@ -104,7 +104,7 @@ export class UserController {
       const user = await this.userService.getByEmail(email);
 
       if (!user) {
-        resp.status(HttpStatus.NOT_FOUND).json({ message: 'User not fount' });
+        resp.status(HttpStatus.NOT_FOUND).json({ message: 'User not found' });
         return;
       }
       const { password, ...others } = user;
