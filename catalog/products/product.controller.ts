@@ -209,7 +209,11 @@ export class ProductController {
         const param: any = [];
         product.parameterProducts.map(paramObj => {
           const parameter: any = parameters.rows.find(parameter => parameter.id === paramObj.parameterId);
-          param.push({ '@name': `${parameter.name}`, '#': paramObj.value });
+          if (paramObj.value == '-' || paramObj.value == '_' || paramObj.value == '') {
+            console.log('empty param');
+          } else {
+            param.push({ '@name': `${parameter.name}`, '#': paramObj.value });
+          }
         });
         return {
           '@id': product.id,
