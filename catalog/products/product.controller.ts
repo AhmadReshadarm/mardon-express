@@ -304,6 +304,65 @@ export class ProductController {
     }
   }
 
+  @Get('yandex-webmaster-rss')
+  async getProductsYandexWebMasterRSSFeed(req: Request, resp: Response) {
+    try {
+      const products: any = await this.productService.getProducts(req.query);
+
+      const filtered = products.rows.filter((product: any) => product?.productVariants![0]?.price !== 1);
+
+      let items = filtered.map((product: Product) => {
+        const images = this.productService.getProductVariantsImages(product.productVariants);
+
+        return `
+       <div>
+       <h3>Артикул : </h3>
+       <span>${product.productVariants[0].artical}</span>
+       </div>
+       <a href="https://nbhoz.ru/product/${product.url}">
+       <figure><img src="https://nbhoz.ru/api/images/${images[0]}"></figure>
+       </a><div><a href="https://nbhoz.ru/product/${product.url}" >
+       <h2>${product.name}</h2>
+       </a>
+       <p>${product.desc}</p>
+       <button formaction="https://nbhoz.ru/product/${product.url}" data-background-color="#000" data-color="white" data-primary="true">Заказать сейчас</button>
+       `;
+      });
+
+      const payload = {
+        rss: {
+          '@xmlns:yandex': 'http://news.yandex.ru',
+          '@xmlns:media': 'http://search.yahoo.com/mrss/',
+          '@xmlns:turbo': 'http://turbo.yandex.ru',
+          '@version': '2.0',
+          'channel': {
+            item: {
+              '@turbo': 'true',
+              'title': 'NBHOZ - Опт Товаров для Дома и Бизнеса',
+              'link': `https://nbhoz.ru`,
+              'turbo:content': {
+                '#': `<![CDATA[${items.join(' ')}
+                ]]>`,
+              },
+            },
+          },
+        },
+      };
+
+      const opts = {
+        encoding: 'utf-8',
+      };
+
+      const root = create(opts, payload);
+
+      const xml = root.end({ prettyPrint: true });
+      resp.setHeader('Content-Type', 'text/xml');
+      resp.send(xml);
+    } catch (error) {
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: `somthing went wrong: ${error}` });
+    }
+  }
+
   @Get('vk/:fileName')
   async getProductsVK(req: Request, resp: Response) {
     const { fileName } = req.params;
