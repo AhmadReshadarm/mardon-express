@@ -215,6 +215,7 @@ export class ProductController {
             param.push({ '@name': `${parameter.name}`, '#': paramObj.value });
           }
         });
+
         return {
           '@id': product.id,
           'name': product.name,
@@ -225,11 +226,11 @@ export class ProductController {
           'vendor': 'NBHOZ',
           // 'picture': `https://nbhoz.ru/api/images/${product?.productVariants![0]?.images?.split(', ')[0]}`,
           picture,
-          'description': `<![CDATA[${
+          'description': `<![CDATA[<p>${
             product?.desc?.includes('|')
               ? product.desc.split('|')[1].split('Минимальная сумма заказа')[0]
               : product.desc.split('Минимальная сумма заказа')[0]
-          }]]>`,
+          }</p>]]>`,
           param,
           'store': 'true',
           'pickup': 'true',
@@ -278,8 +279,7 @@ export class ProductController {
             company: 'NBHOZ',
             url: 'https://nbhoz.ru',
             currencies: {
-              '@currency': 'RUR',
-              '@rate': '1',
+              currency: { '@id': 'RUR', '@rate': '1' },
             },
             categories: {
               category: categoryArray,
