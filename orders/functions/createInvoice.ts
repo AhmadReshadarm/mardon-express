@@ -22,6 +22,23 @@ const getTotalPrice = (cart: any) => {
   return totalAmount;
 };
 
+const generateUpdateInoviceTemplet = (payload: any) => {
+  return `
+      <div>
+        <h1>Статус заказа был изменен на ${payload.status}</h1>
+      </div>
+      <div>
+        <span>Здравствуйте ${payload.receiverName},</span>
+      </div>
+      <div>
+        <span>Статус вашего заказа был изменен на ${payload.status}</span>
+      </div>
+      <div>
+        <span>Вы также можете проверить статус вашего заказа здесь. <a href="https://nbhoz.ru/cart">NBHOZ</a></span>
+      </div>
+  `;
+};
+
 const generateInvoiceTemplet = (payload: templetDTO) => {
   return `  <div>
         <h1>Данные получателя</h1>
@@ -41,21 +58,7 @@ const generateInvoiceTemplet = (payload: templetDTO) => {
       <div>
         <span>Адрес: </span> <span>${payload.address}</span>
       </div>
-      <div>
-        <span>Квартира/офис: </span> <span>${payload.roomOrOffice}</span>
-      </div>
-      <div>
-        <span>Индекс: </span> <span>${payload.zipCode}</span>
-      </div>
-      <div>
-        <span>Подъезд: </span> <span>${payload.door}</span>
-      </div>
-      <div>
-        <span>Этаж: </span> <span>${payload.floor}</span>
-      </div>
-      <div>
-        <span>Домофон: </span> <span>${payload.rignBell}</span>
-      </div>
+     
       <div>
         <h1>Заказ покупателя</h1>
       </div>
@@ -94,4 +97,20 @@ const generateInvoiceTemplet = (payload: templetDTO) => {
       `;
 };
 
-export { generateInvoiceTemplet };
+//  <div>
+//         <span>Квартира/офис: </span> <span>${payload.roomOrOffice}</span>
+//       </div>
+//       <div>
+//         <span>Индекс: </span> <span>${payload.zipCode}</span>
+//       </div>
+//       <div>
+//         <span>Подъезд: </span> <span>${payload.door}</span>
+//       </div>
+//       <div>
+//         <span>Этаж: </span> <span>${payload.floor}</span>
+//       </div>
+//       <div>
+//         <span>Домофон: </span> <span>${payload.rignBell}</span>
+//       </div>
+
+export { generateInvoiceTemplet, generateUpdateInoviceTemplet };

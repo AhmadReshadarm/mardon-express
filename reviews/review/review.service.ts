@@ -82,7 +82,15 @@ export class ReviewService {
     };
     try {
       const res = await axios(options);
-      return res.data;
+      const userInDB = {
+        id: res.data.id,
+        firstName: res.data.firstName,
+        lastName: res.data.lastName,
+        role: res.data.role,
+        // email: user?.email,
+      };
+      return userInDB;
+      // return res.data;
     } catch (e: any) {
       if (e.name === 'AxiosError' && e.response.status === 403) {
         throw new CustomExternalError([ErrorCode.FORBIDDEN], HttpStatus.FORBIDDEN);

@@ -7,10 +7,11 @@ import { Checkout, Parameter, Subscription } from '../../core/entities';
 import { HttpStatus } from '../../core/lib/http-status';
 import { validation } from '../../core/lib/validator';
 import { isAdmin, isUser, verifyToken } from '../../core/middlewares';
-import { generateInvoiceTemplet } from '../../orders/functions/createInvoice';
+import { generateInvoiceTemplet, generateUpdateInoviceTemplet } from '../../orders/functions/createInvoice';
 import { sendInvoice } from '../../orders/functions/send.mail';
 import { CheckoutService } from './checkout.service';
 import { invoiceTamplate } from '../functions/invoice.tamplate';
+import { CheckoutStatus } from 'core/enums/checkout-status.enum';
 
 @singleton()
 @Controller('/checkouts')
@@ -189,6 +190,7 @@ export class CheckoutController {
   async updateCheckout(req: Request, resp: Response) {
     const { id } = req.params;
     const { jwt } = resp.locals;
+    let updated: any;
     try {
       const checkoutsById = await this.checkoutService.getCheckout(id, req.headers.authorization!);
       if (!checkoutsById) {
@@ -212,11 +214,35 @@ export class CheckoutController {
         resp.status(HttpStatus.OK).json(userCheckoutUpdated);
         return;
       }
-      const updated = await this.checkoutService.updateCheckout(id, req.body, resp.locals.user);
+      updated = await this.checkoutService.updateCheckout(id, req.body, resp.locals.user);
 
       resp.status(HttpStatus.OK).json(updated);
     } catch (error) {
       resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
+    }
+    try {
+      const Constants = ['Новый заказ', 'В пути', 'Завершен', 'Отменено'];
+      const payload = {
+        status: Constants[updated.status],
+        receiverName: updated.address.receiverName,
+      };
+      const invoiceData: string = generateUpdateInoviceTemplet(payload);
+
+      const emailAdminPayload = {
+        to: `info@nbhoz.ru`,
+        subject: `Статус заказа № ${updated.id} был изменен`,
+        html: invoiceData,
+      };
+      await this.checkoutService.sendMail(emailAdminPayload);
+
+      const emailUserPayload = {
+        to: updated!.user.email,
+        subject: `Статус заказа № ${updated.id} был изменен`,
+        html: invoiceData,
+      };
+      await this.checkoutService.sendMail(emailUserPayload);
+    } catch (error) {
+      console.log(error);
     }
   }
 

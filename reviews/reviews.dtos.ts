@@ -7,7 +7,7 @@ export interface UserDTO {
   id: string;
   firstName: string;
   lastName: string;
-  email: string;
+  email?: string;
 }
 
 export interface ProductDTO {

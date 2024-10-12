@@ -143,6 +143,31 @@ export class CheckoutService {
     }
   }
 
+  async updateUserById(payload: { id: string; firstName: string; lastName: string }): Promise<UserDTO | undefined> {
+    const { id, firstName, lastName } = payload;
+    const options = {
+      url: `${process.env.USERS_DB}/users/inner/${id}`,
+      method: 'PUT',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json;charset=UTF-8',
+      },
+      data: {
+        secretKey: process.env.INNER_AUTH_CALL_SECRET_KEY,
+        firstName,
+        lastName,
+      },
+    };
+    try {
+      const res = await axios(options);
+      return res.data;
+    } catch (e: any) {
+      if (e.name === 'AxiosError' && e.response.status === 403) {
+        throw new CustomExternalError([ErrorCode.FORBIDDEN], HttpStatus.FORBIDDEN);
+      }
+    }
+  }
+
   async createSubscriber(newSubscrition: Subscription): Promise<Subscription | null> {
     return this.subscribersRepository.save(newSubscrition);
   }
@@ -180,6 +205,12 @@ export class CheckoutService {
 
   async createCheckout(newCheckout: Checkout): Promise<Checkout | null> {
     const created = await this.checkoutRepository.save(newCheckout);
+    const userPaload = {
+      id: newCheckout.userId,
+      firstName: newCheckout.address.receiverName.split(' ')[0] ?? newCheckout.address.receiverName,
+      lastName: newCheckout.address.receiverName.split(' ')[1] ?? '',
+    };
+    await this.updateUserById(userPaload);
 
     const checkout = await this.checkoutRepository
       .createQueryBuilder('checkout')

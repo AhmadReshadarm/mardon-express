@@ -49,8 +49,36 @@ export class UserController {
     const { id } = req.params;
     try {
       const user = await this.userService.getUser(id);
-      const { password, email, ...others } = user;
+      const { password, ...others } = user;
       return resp.json(others);
+    } catch (error) {
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: `somthing went wrong: ${error}` });
+    }
+  }
+
+  @Put('inner/:id')
+  async updateUserById(req: Request, resp: Response) {
+    const { firstName, lastName, secretKey } = req.body;
+
+    if (secretKey !== process.env.INNER_AUTH_CALL_SECRET_KEY) {
+      resp.status(HttpStatus.FORBIDDEN).json({ message: 'not authorized' });
+      return;
+    }
+    const { id } = req.params;
+    try {
+      const user = await this.userService.getUser(id);
+      const updated = await this.userService.updateUser(id, {
+        id: user.id,
+        firstName: firstName ?? user.firstName,
+        lastName: lastName ?? user.lastName,
+        email: user.email,
+        password: user.password,
+        isVerified: user.isVerified,
+        role: user.role,
+        image: user.image,
+      });
+      const { password, ...others } = updated;
+      resp.status(HttpStatus.OK).json({ user: { ...others } });
     } catch (error) {
       resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: `somthing went wrong: ${error}` });
     }
@@ -63,7 +91,7 @@ export class UserController {
 
     try {
       const userById = await this.userService.getUser(jwt.id);
-      const { password, email, ...other } = userById;
+      const { password, ...other } = userById;
       resp.status(HttpStatus.OK).json({ user: { ...other } });
     } catch (error) {
       resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: `somthing went wrong: ${error}` });
@@ -188,10 +216,10 @@ export class UserController {
     const { id } = req.params;
     const { password, oldPassword } = req.body;
     const { jwt } = resp.locals;
-    if (password === oldPassword) {
-      resp.status(HttpStatus.CONFLICT).json({ message: 'Can not use the same password as previous' });
-      return;
-    }
+    // if (password === oldPassword) {
+    //   resp.status(HttpStatus.CONFLICT).json({ message: 'Can not use the same password as previous' });
+    //   return;
+    // }
     try {
       const salt = await bcrypt.genSalt(10);
       const hashedPass = await bcrypt.hash(password, salt);
@@ -201,8 +229,8 @@ export class UserController {
         resp.status(HttpStatus.UNAUTHORIZED).json({ message: 'Old password did not match' });
         return;
       }
-      const validated = await bcrypt.compare(password, user.password);
-      if (validated) {
+      const newPasswordSameAsBeforePassword = await bcrypt.compare(password, user.password);
+      if (newPasswordSameAsBeforePassword) {
         resp.status(HttpStatus.CONFLICT).json({ message: 'Can not use the same password as previous' });
         return;
       }
