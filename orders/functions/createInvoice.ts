@@ -34,7 +34,7 @@ const generateUpdateInoviceTemplet = (payload: any) => {
         <span>Статус вашего заказа был изменен на ${payload.status}</span>
       </div>
       <div>
-        <span>Вы также можете проверить статус вашего заказа здесь. <a href="https://nbhoz.ru/cart">NBHOZ</a></span>
+        <span>Вы также можете проверить статус вашего заказа здесь. <a href="https://nbhoz.ru/orders">NBHOZ > Мои заказы</a></span>
       </div>
   `;
 };
