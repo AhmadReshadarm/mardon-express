@@ -11,6 +11,7 @@ import { HttpStatus } from '../core/lib/http-status';
 import fs from 'fs';
 import axios from 'axios';
 import sharp from 'sharp';
+import zlib from 'zlib';
 
 @singleton()
 @Controller('/images')
@@ -94,7 +95,36 @@ export class ImageController {
         resp.status(HttpStatus.NOT_FOUND).json({ message: 'the file your looking for does not exist' });
         return;
       }
+      resp.setHeader('content-Type', 'image/webp');
+      resp.setHeader('Cache-Control', 'public, max-age=31536000');
+
       resp.sendFile(fileName, { root: DESTINATION });
+    } catch (error: any) {
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
+    }
+  }
+
+  @Get('compress/:fileName')
+  async getCompressedImage(req: Request, resp: Response) {
+    const { fileName } = req.params;
+    try {
+      if (!fs.existsSync(`${DESTINATION}/${fileName}`)) {
+        // await this.imageService.removeImage(fileName);
+        resp.status(HttpStatus.NOT_FOUND).json({ message: 'the file your looking for does not exist' });
+        return;
+      }
+
+      // Compress the image data using zlib
+      zlib.gzip(`${DESTINATION}/${fileName}`, (err, compressedData) => {
+        if (err) {
+          console.error(err);
+          return resp.status(HttpStatus.INTERNAL_SERVER_ERROR).send('Error compressing image');
+        }
+
+        resp.setHeader('Content-Type', 'application/octet-stream');
+        resp.setHeader('Content-Encoding', 'gzip');
+        resp.send(compressedData);
+      });
     } catch (error: any) {
       resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
     }
