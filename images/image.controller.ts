@@ -3,9 +3,9 @@ import { singleton } from 'tsyringe';
 import { ImageService } from './image.service';
 import multer from './middlewares/multer';
 import { ImageDto } from './image.dto';
-import { DESTINATION } from './config';
+import { DESTINATION, DESTINATION_COMPRESSED } from './config';
 import { Controller, Delete, Get, Middleware, Post } from '../core/decorators';
-import { createDestination } from './middlewares/create.destination';
+import { createDestination, createDestinationCompressed } from './middlewares/create.destination';
 import { isAdmin, isUser, verifyToken } from '../core/middlewares';
 import { HttpStatus } from '../core/lib/http-status';
 import fs from 'fs';
@@ -61,7 +61,7 @@ export class ImageController {
         const filename = sections[0];
         const path = `./files/${filename}.webp`;
         sharp(image.path)
-          .webp({ lossless: false })
+          .webp({ lossless: true, quality: 100 })
           .toFile(path, error => {
             if (error) {
               console.log(error);
@@ -91,7 +91,6 @@ export class ImageController {
     const { fileName } = req.params;
     try {
       if (!fs.existsSync(`${DESTINATION}/${fileName}`)) {
-        // await this.imageService.removeImage(fileName);
         resp.status(HttpStatus.NOT_FOUND).json({ message: 'the file your looking for does not exist' });
         return;
       }
@@ -105,26 +104,44 @@ export class ImageController {
   }
 
   @Get('compress/:fileName')
+  @Middleware([createDestinationCompressed])
   async getCompressedImage(req: Request, resp: Response) {
     const { fileName } = req.params;
+    const { qlty, width, height, lossless } = req.query;
+
     try {
       if (!fs.existsSync(`${DESTINATION}/${fileName}`)) {
-        // await this.imageService.removeImage(fileName);
         resp.status(HttpStatus.NOT_FOUND).json({ message: 'the file your looking for does not exist' });
         return;
       }
 
-      // Compress the image data using zlib
-      zlib.gzip(`${DESTINATION}/${fileName}`, (err, compressedData) => {
-        if (err) {
-          console.error(err);
-          return resp.status(HttpStatus.INTERNAL_SERVER_ERROR).send('Error compressing image');
-        }
-
-        resp.setHeader('Content-Type', 'application/octet-stream');
-        resp.setHeader('Content-Encoding', 'gzip');
-        resp.send(compressedData);
-      });
+      const webp = await sharp(`${DESTINATION}/${fileName}`);
+      if (width && height) {
+        webp
+          .webp({ lossless: Boolean(lossless), quality: Number(qlty) })
+          .resize(Number(width), Number(height), { fit: 'inside' })
+          .toFile(`${DESTINATION_COMPRESSED}/thumbnail-${fileName}`)
+          .then(() => {
+            resp.setHeader('content-Type', 'image/webp');
+            resp.setHeader('Cache-Control', 'public, max-age=31536000');
+            resp.sendFile(`thumbnail-${fileName}`, { root: DESTINATION_COMPRESSED });
+          })
+          .catch(error => {
+            console.log(error);
+          });
+        return;
+      }
+      webp
+        .webp({ lossless: false, quality: Number(qlty) })
+        .toFile(`${DESTINATION_COMPRESSED}/${fileName}`)
+        .then(() => {
+          resp.setHeader('content-Type', 'image/webp');
+          resp.setHeader('Cache-Control', 'public, max-age=31536000');
+          resp.sendFile(fileName, { root: DESTINATION_COMPRESSED });
+        })
+        .catch(error => {
+          console.log(error);
+        });
     } catch (error: any) {
       resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
     }
