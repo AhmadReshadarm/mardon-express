@@ -87,7 +87,7 @@ export class ProductService {
       queryBuilder.andWhere('product.desc LIKE :desc', { desc: `%${desc}%` });
     }
     if (available) {
-      queryBuilder.andWhere('productVariant.available EQUAL :available', { available: `%${available}%` });
+      queryBuilder.andWhere('productVariant.available = :available', { available: `%${available}%` });
     }
     if (colors) {
       queryBuilder.andWhere('color.url IN (:...colors)', { colors: colors });
