@@ -61,7 +61,7 @@ export class ImageController {
         const filename = sections[0];
         const path = `./files/${filename}.webp`;
         sharp(image.path)
-          .webp({ lossless: true, quality: 100 })
+          .webp({ lossless: false })
           .toFile(path, error => {
             if (error) {
               console.log(error);
