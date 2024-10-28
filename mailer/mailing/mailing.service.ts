@@ -69,7 +69,7 @@ export class MailingService {
     this.validateMailOptions(options);
 
     // Read the image data
-    const attachment = fs.readFileSync(path.resolve(__dirname + '../../../assets/logo.svg'));
+    const attachment = fs.readFileSync(path.resolve(__dirname + '../../../../assets/logo.svg'));
 
     // Add the attachment to the mail options
     options.attachments = [
