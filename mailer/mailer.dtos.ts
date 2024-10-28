@@ -1,5 +1,6 @@
 export interface MailOptionsDTO {
-  to: string,
-  subject: string,
-  html: string,
+  to: string;
+  subject: string;
+  html: string;
+  attachments?: any;
 }

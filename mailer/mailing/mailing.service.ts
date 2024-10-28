@@ -9,6 +9,7 @@ import { CustomExternalError } from '../../core/domain/error/custom.external.err
 import { ErrorCode } from '../../core/domain/error/error.code';
 import { HttpStatus } from '../../core/lib/http-status';
 import { CustomInternalError } from '../../core/domain/error/custom.internal.error';
+import fs from 'fs';
 
 @singleton()
 export class MailingService {
@@ -65,6 +66,18 @@ export class MailingService {
 
   async sendMail(options: MailOptionsDTO) {
     this.validateMailOptions(options);
+
+    // Read the image data
+    const attachment = fs.readFileSync(`../assets/logo.svg`);
+
+    // Add the attachment to the mail options
+    options.attachments = [
+      {
+        filename: 'logo.svg',
+        content: attachment,
+        cid: 'logo', // This CID is used in the HTML
+      },
+    ];
 
     let result: any;
     await this.smptTransporter.sendMail(
