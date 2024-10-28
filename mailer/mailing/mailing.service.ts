@@ -10,6 +10,7 @@ import { ErrorCode } from '../../core/domain/error/error.code';
 import { HttpStatus } from '../../core/lib/http-status';
 import { CustomInternalError } from '../../core/domain/error/custom.internal.error';
 import fs from 'fs';
+import path from 'path';
 
 @singleton()
 export class MailingService {
@@ -68,7 +69,7 @@ export class MailingService {
     this.validateMailOptions(options);
 
     // Read the image data
-    const attachment = fs.readFileSync(__dirname + '../assets/logo.svg');
+    const attachment = fs.readFileSync(path.resolve(__dirname + '../../../assets/logo.svg'));
 
     // Add the attachment to the mail options
     options.attachments = [
