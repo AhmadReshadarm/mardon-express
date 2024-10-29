@@ -108,7 +108,7 @@ const generateInvoiceTemplet = (payload: templetDTO) => {
     <title>Форма заказа | NBHOZ</title>
   </head>
   <body>
-    <div class="body-wrapper">
+    <div class="body-wrapper" style="width: 90%;  padding: 40px;">
       <div>
         <h1>Данные получателя</h1>
       </div>
@@ -127,12 +127,13 @@ const generateInvoiceTemplet = (payload: templetDTO) => {
       </div>
        ${payload.cart?.orderProducts
          ?.map((orderproduct: any) => {
-           return `<div class="product-wrapper">
+           return `<div class="product-wrapper" style="width: 150px; margin: 1%;  float: left;">
         <div class="product-card">
           <img
             class="product-img"
             src="https://nbhoz.ru/api/images/${orderproduct.productVariant?.images?.split(',')[0]}"
             alt="${orderproduct.product?.name}"
+            style="width: 100%; height: 150px; min-height: 150px; border: 1px solid gray; border-radius: 20px;"
           />
           <h4 class="product-title">${orderproduct.product?.name}</h4>
           <div class="product-details">
@@ -153,7 +154,7 @@ const generateInvoiceTemplet = (payload: templetDTO) => {
          .join('')}
 
 
-      <div class="total-wrapper">
+      <div class="total-wrapper" style="clear: both; padding: 30px 0 30px 0;">
         <span>
           <h1>Итого:</h1>
         </span>
