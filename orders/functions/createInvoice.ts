@@ -39,78 +39,136 @@ const generateUpdateInoviceTemplet = (payload: any) => {
   `;
 };
 
+// const generateInvoiceTemplet = (payload: templetDTO) => {
+//   return `  <div>
+//         <h1>Данные получателя</h1>
+//       </div>
+//       <div>
+//         <span>Имя и фамилия: </span> <span>${payload.receiverName}</span>
+//       </div>
+//       <div>
+//         <span>Телефон: </span> <span>${payload.receiverPhone}</span>
+//       </div>
+//       <div>
+//         <span>Ад. эл.: </span> <span>${payload.receiverEmail}</span>
+//       </div>
+//       <div>
+//         <h1>Адрес доставки</h1>
+//       </div>
+//       <div>
+//         <span>Адрес: </span> <span>${payload.address}</span>
+//       </div>
+
+//       <div>
+//         <h1>Заказ покупателя</h1>
+//       </div>
+//       ${payload.cart?.orderProducts?.map(
+//         (product: any) =>
+//           ` <div>
+//             <span>${product.product?.name}</span>
+//             <span>${product!.qty} шт</span>
+//             <span>*</span>
+//             <span>${product.productVariant?.price}₽</span>
+//             <span>=</span>
+//             <span>${product.productVariant?.price! * product.qty!}₽</span>
+//           </div>
+//           <div>
+//             <span>Цвет:</span>
+//             <span>${product.productVariant?.color?.name}</span>
+//           </div>
+//           <div>
+//            <span>Артикул:</span>
+//             <span>${product.productVariant?.artical}</span>
+//           </div>
+//        `,
+//       )}
+//       <div>
+//         <span>
+//           <h3>Итого:</h3>
+//         </span>
+//         <span>${getTotalPrice(payload.cart)}₽</span>
+//       </div>
+//       <div>
+//         <h1>Комментарий</h1>
+//       </div>
+//        <div>
+//          <span>${payload.comment}</span>
+//       </div>
+//       `;
+// };
+
 const generateInvoiceTemplet = (payload: templetDTO) => {
-  return `  <div>
+  return `  <!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="shortcut icon" href="https://nbhoz.ru/favicon.svg" />
+    <link rel="stylesheet" href="https://nbhoz.ru/emailStyle.css" />
+    <title>Форма заказа | NBHOZ</title>
+  </head>
+  <body>
+    <div class="body-wrapper">
+      <div>
         <h1>Данные получателя</h1>
       </div>
-      <div>
-        <span>Имя и фамилия: </span> <span>${payload.receiverName}</span>
-      </div>
-      <div>
-        <span>Телефон: </span> <span>${payload.receiverPhone}</span>
-      </div>
-      <div>
-        <span>Ад. эл.: </span> <span>${payload.receiverEmail}</span>
-      </div>
+      <div><span>Имя и фамилия: </span> <span>${payload.receiverName}</span></div>
+      <div><span>Телефон: </span> <span>${payload.receiverPhone}</span></div>
+      <div><span>Ад. эл.: </span> <span>${payload.receiverEmail}</span></div>
       <div>
         <h1>Адрес доставки</h1>
       </div>
       <div>
         <span>Адрес: </span> <span>${payload.address}</span>
       </div>
-     
+
       <div>
         <h1>Заказ покупателя</h1>
       </div>
-      ${payload.cart?.orderProducts?.map(
-        (product: any) =>
-          ` <div>
-            <span>${product.product?.name}</span>
-            <span>${product!.qty} шт</span>
+       ${payload.cart?.orderProducts
+         ?.map((orderproduct: any) => {
+           return `<div class="product-wrapper">
+        <div class="product-card">
+          <img
+            class="product-img"
+            src="https://nbhoz.ru/api/images/${orderproduct.productVariant?.images?.split(',')[0]}"
+            alt="${orderproduct.product?.name}"
+          />
+          <h4 class="product-title">${orderproduct.product?.name}</h4>
+          <div class="product-details">
+            <span>${orderproduct!.qty} шт</span>
             <span>*</span>
-            <span>${product.productVariant?.price}₽</span>
+            <span>${orderproduct.productVariant?.price}₽</span>
             <span>=</span>
-            <span>${product.productVariant?.price! * product.qty!}₽</span>
+            <span>${orderproduct.productVariant?.price! * orderproduct.qty!}₽</span>
           </div>
-          <div>
-            <span>Цвет:</span>
-            <span>${product.productVariant?.color?.name}</span>
+          <div class="product-artical">
+            <span>Артикул:</span>
+            <span>${orderproduct.productVariant?.artical}</span>
           </div>
-          <div>
-           <span>Артикул:</span>
-            <span>${product.productVariant?.artical}</span>
-          </div>
-       `,
-      )}
-      <div>
-        <span>
-          <h3>Итого:</h3>
-        </span>
-        <span>${getTotalPrice(payload.cart)}₽</span>
+        </div>
       </div>
-      <div>
+       `;
+         })
+         .join('')}
+
+
+      <div class="total-wrapper">
+        <span>
+          <h1>Итого:</h1>
+        </span>
+        <h2>${getTotalPrice(payload.cart)}₽</h2>
+      </div>
+      <div class="comment-title-wrapper">
         <h1>Комментарий</h1>
       </div>
-       <div>
-         <span>${payload.comment}</span>
+      <div class="comment-wrapper">
+        <span>${payload.comment}</span>
       </div>
+    </div>
+  </body>
+</html>
       `;
 };
-
-//  <div>
-//         <span>Квартира/офис: </span> <span>${payload.roomOrOffice}</span>
-//       </div>
-//       <div>
-//         <span>Индекс: </span> <span>${payload.zipCode}</span>
-//       </div>
-//       <div>
-//         <span>Подъезд: </span> <span>${payload.door}</span>
-//       </div>
-//       <div>
-//         <span>Этаж: </span> <span>${payload.floor}</span>
-//       </div>
-//       <div>
-//         <span>Домофон: </span> <span>${payload.rignBell}</span>
-//       </div>
 
 export { generateInvoiceTemplet, generateUpdateInoviceTemplet };
