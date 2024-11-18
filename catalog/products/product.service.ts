@@ -36,8 +36,6 @@ export class ProductService {
       categories,
       parent,
       category,
-      // brands,
-      // brand,
       tags,
       tag,
       sortBy = 'name',
@@ -50,28 +48,40 @@ export class ProductService {
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.category', 'category')
       .leftJoinAndSelect('category.parent', 'categoryParent')
-      // .leftJoinAndSelect('product.brand', 'brand')
       .leftJoinAndSelect('product.tags', 'tag')
       .leftJoinAndSelect('product.parameterProducts', 'parameterProducts')
       .leftJoinAndSelect('product.productVariants', 'productVariant')
       .leftJoinAndSelect('productVariant.color', 'color');
-    //  added LOWER for better resluts
+
+    // if (name) {
+    //   queryBuilder
+    //     .andWhere('LOWER(product.name) LIKE LOWER(:name)', { name: `%${name}%` })
+    //     .orWhere('LOWER(productVariant.artical) LIKE LOWER(:artical)', { artical: `%${name}%` })
+    //     .orWhere('LOWER(product.keywords) LIKE LOWER(:keywords)', { keywords: `%${name}%` });
+    // }
+
     if (name) {
-      // name.split(' ').forEach((term, index) => {
-      //   index === 0
-      //     ? queryBuilder
-      //         .andWhere('LOWER(product.name) LIKE LOWER(:term)', { term: `%${term}%` })
-      //         .orWhere('LOWER(productVariant.artical) LIKE LOWER(:artical)', { artical: `%${term}%` })
-      //         .orWhere('LOWER(product.desc) LIKE LOWER(:desc)', { desc: `%${term}%` })
-      //     : queryBuilder
-      //         .andWhere('LOWER(product.name) LIKE LOWER(:term)', { term: `%${term}%` })
-      //         .orWhere('LOWER(productVariant.artical) LIKE LOWER(:artical)', { artical: `%${term}%` })
-      //         .orWhere('LOWER(product.desc) LIKE LOWER(:desc)', { desc: `%${term}%` });
-      // });
-      queryBuilder
-        .andWhere('LOWER(product.name) LIKE LOWER(:name)', { name: `%${name}%` })
-        .orWhere('LOWER(productVariant.artical) LIKE LOWER(:artical)', { artical: `%${name}%` })
-        .orWhere('LOWER(product.desc) LIKE LOWER(:desc)', { desc: `%${name}%` });
+      const keywords = name.toLowerCase().split(/\s+/);
+
+      let query = queryBuilder;
+
+      keywords.forEach((keyword, index) => {
+        if (index === 0) {
+          query = query.where(
+            `LOWER(product.name) LIKE :keyword 
+        OR LOWER(productVariant.artical) LIKE :keyword 
+        OR LOWER(product.keywords) LIKE :keyword`,
+            { keyword: `%${keyword}%` },
+          );
+        } else {
+          query = query.orWhere(
+            `LOWER(product.name) LIKE :keyword 
+        OR LOWER(productVariant.artical) LIKE :keyword 
+        OR LOWER(product.keywords) LIKE :keyword`,
+            { keyword: `%${keyword}%` },
+          );
+        }
+      });
     }
 
     if (minPrice) {
