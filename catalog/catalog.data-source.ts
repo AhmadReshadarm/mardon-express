@@ -22,6 +22,7 @@ const dataSource = new DataSource({
   logging: true,
   synchronize: true,
   migrationsRun: false,
+  charset: 'utf8mb4',
   entities: [Product, Category, Color, Parameter, Tag, ParameterProducts, ProductVariant],
 });
 // Size,
