@@ -125,6 +125,11 @@ export class ProductController {
       });
 
       const offer = filtered.map((product: any) => {
+        const images = this.productService.getProductVariantsImages(product.productVariants);
+        const picture: any = [];
+        images.map(image => {
+          picture.push({ '#': `https://nbhoz.ru/api/images/${image}` });
+        });
         return {
           '@id': product?.id,
           'name': product?.name,
@@ -132,7 +137,8 @@ export class ProductController {
           'price': product?.productVariants[0]?.price,
           'currencyId': 'RUR',
           'categoryId': product?.category?.id,
-          'picture': `https://nbhoz.ru/api/images/${product?.productVariants![0]?.images?.split(', ')[0]}`,
+          // 'picture': `https://nbhoz.ru/api/images/${product?.productVariants![0]?.images?.split(', ')[0]}`,
+          picture,
           'description': product?.desc?.includes('|') ? product?.desc.split('|')[1] : product?.desc,
           'rating': product?.rating?.avg,
         };
