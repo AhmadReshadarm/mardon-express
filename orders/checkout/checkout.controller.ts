@@ -1,4 +1,4 @@
-import webpush from 'web-push';
+// import webpush from 'web-push';
 import { Role } from '../../core/enums/roles.enum';
 import { Request, Response, NextFunction } from 'express';
 import { singleton } from 'tsyringe';
@@ -8,11 +8,16 @@ import { HttpStatus } from '../../core/lib/http-status';
 import { validation } from '../../core/lib/validator';
 import { isAdmin, isUser, verifyToken } from '../../core/middlewares';
 import { generateInvoiceTemplet, generateUpdateInoviceTemplet } from '../../orders/functions/createInvoice';
-import { sendInvoice } from '../../orders/functions/send.mail';
+// import { sendInvoice } from '../../orders/functions/send.mail';
 import { CheckoutService } from './checkout.service';
-import { invoiceTamplate } from '../functions/invoice.tamplate';
-import { CheckoutStatus } from 'core/enums/checkout-status.enum';
-
+import path from 'path';
+// import { invoiceTamplate } from '../functions/invoice.tamplate';
+// import { CheckoutStatus } from 'core/enums/checkout-status.enum';
+interface EmbeddedImage {
+  filename: string;
+  href: string; // Use href for URLs
+  cid: string;
+}
 @singleton()
 @Controller('/checkouts')
 export class CheckoutController {
@@ -92,12 +97,52 @@ export class CheckoutController {
         comment: req.body.comment,
         cart: req.body.basket,
       };
-      const invoiceData: string = generateInvoiceTemplet(payload);
+
+      const cidImageMap: Record<string, string> = {}; // Map to store CID values
+
+      // Embedded Favicon from URL
+      const faviconCid = 'favicon';
+      cidImageMap['favicon'] = faviconCid;
+      const faviconAttachment: EmbeddedImage = {
+        filename: 'favicon.svg',
+        href: 'https://nbhoz.ru/favicon.svg', // URL for favicon
+        cid: faviconCid,
+      };
+
+      // Embedded emailStyle.css from URL (consider inline styles for email compatibility)
+      const emailStyleCid = 'emailStyle';
+      cidImageMap['emailStyle'] = emailStyleCid;
+      const emailStyleAttachment: EmbeddedImage = {
+        filename: 'emailStyle.css',
+        href: 'https://nbhoz.ru/emailStyle.css', // URL for emailStyle.css
+        cid: emailStyleCid,
+      };
+
+      const productAttachments: EmbeddedImage[] = [];
+      if (payload.cart?.orderProducts) {
+        for (const orderproduct of payload.cart.orderProducts) {
+          const imageName = orderproduct.productVariant?.images?.split(',')[0];
+          if (imageName) {
+            const imageUrl = `https://nbhoz.ru/api/images/${imageName}`; // Construct product image URL
+            const productImageCid = `productImage_${orderproduct.productVariant?.artical}`;
+
+            productAttachments.push({
+              filename: imageName,
+              href: imageUrl, // URL for product image
+              cid: productImageCid,
+            });
+          }
+        }
+      }
+
+      // const invoiceData: string = generateInvoiceTemplet(payload);
+      const invoiceData: string = generateInvoiceTemplet(payload, cidImageMap);
 
       const emailAdminPayload = {
         to: `info@nbhoz.ru`,
         subject: `Заказ № ${created.id} на nbhoz.ru`,
         html: invoiceData,
+        attachments: [faviconAttachment, emailStyleAttachment, ...productAttachments],
       };
       await this.checkoutService.sendMail(emailAdminPayload);
 
@@ -105,6 +150,7 @@ export class CheckoutController {
         to: `armaan0080@yahoo.com`,
         subject: `Заказ № ${created.id} на nbhoz.ru`,
         html: invoiceData,
+        attachments: [faviconAttachment, emailStyleAttachment, ...productAttachments],
       };
       await this.checkoutService.sendMail(emailAdminPayload_2);
 
@@ -112,6 +158,7 @@ export class CheckoutController {
         to: user.role !== Role.Admin ? user.email : req.body.address.receiverEmail,
         subject: `Заказ № ${created.id} на nbhoz.ru`,
         html: invoiceData,
+        attachments: [faviconAttachment, emailStyleAttachment, ...productAttachments],
       };
       await this.checkoutService.sendMail(emailUserPayload);
     } catch (error) {

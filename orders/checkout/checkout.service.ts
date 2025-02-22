@@ -320,19 +320,6 @@ export class CheckoutService {
   async sendMail(options: MailOptionsDTO) {
     this.validateMailOptions(options);
 
-    // const result = await this.smptTransporter.sendMail({
-    //   ...options,
-    //   from: MAIL_FROM,
-    // });
-
-    // if (result.response === '250 2.0.0 Ok: queued') {
-    //   return {
-    //     status: HttpStatus.OK,
-    //     response: {
-    //       message: `Mail was successfully sent to ${options.to}`,
-    //     },
-    //   };
-    // }
     let result: any;
     await this.smptTransporter.sendMail(
       {

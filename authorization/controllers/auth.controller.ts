@@ -19,47 +19,47 @@ import { UserService } from '../services/user.service';
 @Controller('/auth')
 export class AuthController {
   constructor(private userService: UserService) {
-    // (async () => {
-    //   const admin = await this.userService.getAdmin();
-    //   if (!admin) {
-    //     const salt = await bcrypt.genSalt(10);
-    //     const hashedPass = await bcrypt.hash('arm12345', salt);
-    //     await this.userService.createUser({
-    //       firstName: 'admin',
-    //       lastName: 'admin',
-    //       isVerified: true,
-    //       email: 'admin@admin.ru',
-    //       password: hashedPass,
-    //       role: Role.Admin,
-    //     } as any);
-    //   }
-    // })();
+    (async () => {
+      const admin = await this.userService.getAdmin();
+      if (!admin) {
+        const salt = await bcrypt.genSalt(10);
+        const hashedPass = await bcrypt.hash('arm12345', salt);
+        await this.userService.createUser({
+          firstName: 'admin',
+          lastName: 'admin',
+          isVerified: true,
+          email: 'admin@admin.ru',
+          password: hashedPass,
+          role: Role.Admin,
+        } as any);
+      }
+    })();
   }
 
-  // @Get('init-admin')
-  // async initAdmin(req: Request, resp: Response) {
-  //   const admin = await this.userService.getAdmin();
+  @Get('init-admin')
+  async initAdmin(req: Request, resp: Response) {
+    const admin = await this.userService.getAdmin();
 
-  //   if (!admin) {
-  //     const salt = await bcrypt.genSalt(10);
-  //     const hashedPass = await bcrypt.hash('arm12345', salt);
+    if (!admin) {
+      const salt = await bcrypt.genSalt(10);
+      const hashedPass = await bcrypt.hash('arm12345', salt);
 
-  //     const user = await this.userService.createUser({
-  //       firstName: 'admin',
-  //       lastName: 'admin',
-  //       isVerified: true,
-  //       email: 'admin@admin.ru',
-  //       password: hashedPass,
-  //       role: Role.Admin,
-  //     } as any);
+      const user = await this.userService.createUser({
+        firstName: 'admin',
+        lastName: 'admin',
+        isVerified: true,
+        email: 'admin@admin.ru',
+        password: hashedPass,
+        role: Role.Admin,
+      } as any);
 
-  //     resp.status(HttpStatus.CREATED).json({ user });
+      resp.status(HttpStatus.CREATED).json({ user });
 
-  //     return;
-  //   }
+      return;
+    }
 
-  //   resp.status(HttpStatus.CREATED).json({ info: 'already exists', user: admin });
-  // }
+    resp.status(HttpStatus.CREATED).json({ info: 'already exists', user: admin });
+  }
 
   @Post('signup')
   async signUp(req: Request, resp: Response) {

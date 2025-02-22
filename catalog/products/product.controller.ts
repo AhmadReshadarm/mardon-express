@@ -330,8 +330,10 @@ export class ProductController {
        </a><div><a href="https://nbhoz.ru/product/${product.url}" >
        <h2>${product.name}</h2>
        </a>
-       <p>${product.desc}</p>
-       <button formaction="https://nbhoz.ru/product/${product.url}" data-background-color="#000" data-color="white" data-primary="true">Заказать сейчас</button>
+       <p>${product?.desc?.includes('|') ? product.desc.split('|')[1] : product.desc}</p>
+       <button formaction="https://nbhoz.ru/product/${
+         product.url
+       }" data-background-color="#000" data-color="white" data-primary="true">Заказать сейчас</button>
        `;
       });
 
