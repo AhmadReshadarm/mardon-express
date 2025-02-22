@@ -204,14 +204,14 @@ const generateInvoiceTemplet = (payload: templetDTO, cidImageMap: Record<string,
             cidImageMap[productImageCid] = productImageCid;
             return `<div class="product-wrapper" style="width: 150px; margin: 1%; float: left;">
               <div>
-                <a href="${orderproduct.product?.url}">
+                <a href="https://nbhoz.ru/product/${orderproduct.product?.url}">
                 <img
                   src="cid:${productImageCid}"
                   alt="${orderproduct.product?.name}"
                   style="width: 100%; height: 150px; min-height: 150px; border: 1px solid gray; border-radius: 20px;"
                 />
                 </a>
-                <a href="${orderproduct.product?.url}">
+                <a href="https://nbhoz.ru/product/${orderproduct.product?.url}">
                 <h4 class="product-title">${orderproduct.product?.name}</h4>
                 </a>
                 <div class="product-details">
