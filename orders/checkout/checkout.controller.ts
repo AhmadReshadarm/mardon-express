@@ -100,23 +100,23 @@ export class CheckoutController {
 
       const cidImageMap: Record<string, string> = {}; // Map to store CID values
 
-      // Embedded Favicon from URL
-      const faviconCid = 'favicon';
-      cidImageMap['favicon'] = faviconCid;
-      const faviconAttachment: EmbeddedImage = {
-        filename: 'favicon.svg',
-        href: 'https://nbhoz.ru/favicon.svg', // URL for favicon
-        cid: faviconCid,
-      };
+      // // Embedded Favicon from URL
+      // const faviconCid = 'favicon';
+      // cidImageMap['favicon'] = faviconCid;
+      // const faviconAttachment: EmbeddedImage = {
+      //   filename: 'favicon.svg',
+      //   href: 'https://nbhoz.ru/favicon.svg', // URL for favicon
+      //   cid: faviconCid,
+      // };
 
-      // Embedded emailStyle.css from URL (consider inline styles for email compatibility)
-      const emailStyleCid = 'emailStyle';
-      cidImageMap['emailStyle'] = emailStyleCid;
-      const emailStyleAttachment: EmbeddedImage = {
-        filename: 'emailStyle.css',
-        href: 'https://nbhoz.ru/emailStyle.css', // URL for emailStyle.css
-        cid: emailStyleCid,
-      };
+      // // Embedded emailStyle.css from URL (consider inline styles for email compatibility)
+      // const emailStyleCid = 'emailStyle';
+      // cidImageMap['emailStyle'] = emailStyleCid;
+      // const emailStyleAttachment: EmbeddedImage = {
+      //   filename: 'emailStyle.css',
+      //   href: 'https://nbhoz.ru/emailStyle.css', // URL for emailStyle.css
+      //   cid: emailStyleCid,
+      // };
 
       const productAttachments: EmbeddedImage[] = [];
       if (payload.cart?.orderProducts) {
@@ -142,7 +142,7 @@ export class CheckoutController {
         to: `info@nbhoz.ru`,
         subject: `Заказ № ${created.id} на nbhoz.ru`,
         html: invoiceData,
-        attachments: [faviconAttachment, emailStyleAttachment, ...productAttachments],
+        attachments: productAttachments,
       };
       await this.checkoutService.sendMail(emailAdminPayload);
 
@@ -150,7 +150,7 @@ export class CheckoutController {
         to: `armaan0080@yahoo.com`,
         subject: `Заказ № ${created.id} на nbhoz.ru`,
         html: invoiceData,
-        attachments: [faviconAttachment, emailStyleAttachment, ...productAttachments],
+        attachments: productAttachments,
       };
       await this.checkoutService.sendMail(emailAdminPayload_2);
 
@@ -158,7 +158,7 @@ export class CheckoutController {
         to: user.role !== Role.Admin ? user.email : req.body.address.receiverEmail,
         subject: `Заказ № ${created.id} на nbhoz.ru`,
         html: invoiceData,
-        attachments: [faviconAttachment, emailStyleAttachment, ...productAttachments],
+        attachments: productAttachments,
       };
       await this.checkoutService.sendMail(emailUserPayload);
     } catch (error) {

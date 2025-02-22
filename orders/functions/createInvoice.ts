@@ -178,12 +178,10 @@ const generateInvoiceTemplet = (payload: templetDTO, cidImageMap: Record<string,
     <head>
       <meta charset="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <link rel="shortcut icon" href="cid:${cidImageMap['favicon']}" />
-      <link rel="stylesheet" href="cid:${cidImageMap['emailStyle']}" />
       <title>Форма заказа | site name</title>
     </head>
     <body>
-      <div class="body-wrapper" style="width: 90%; padding: 40px;">
+      <div  style="width: 90%; padding: 40px;">
         <div>
           <h1>Данные получателя</h1>
         </div>
@@ -205,14 +203,17 @@ const generateInvoiceTemplet = (payload: templetDTO, cidImageMap: Record<string,
             const productImageCid = `productImage_${orderproduct.productVariant?.artical}`;
             cidImageMap[productImageCid] = productImageCid;
             return `<div class="product-wrapper" style="width: 150px; margin: 1%; float: left;">
-              <div class="product-card">
+              <div>
+                <a href="${orderproduct.product?.url}">
                 <img
-                  class="product-img"
                   src="cid:${productImageCid}"
                   alt="${orderproduct.product?.name}"
                   style="width: 100%; height: 150px; min-height: 150px; border: 1px solid gray; border-radius: 20px;"
                 />
+                </a>
+                <a href="${orderproduct.product?.url}">
                 <h4 class="product-title">${orderproduct.product?.name}</h4>
+                </a>
                 <div class="product-details">
                   <span>${orderproduct!.qty} шт</span>
                   <span>*</span>
@@ -231,7 +232,7 @@ const generateInvoiceTemplet = (payload: templetDTO, cidImageMap: Record<string,
           .join('')}
 
 
-        <div class="total-wrapper" style="clear: both; padding: 30px 0 30px 0;">
+        <div style="clear: both; padding: 30px 0 30px 0;">
           <span>
             <h1>Итого:</h1>
           </span>
