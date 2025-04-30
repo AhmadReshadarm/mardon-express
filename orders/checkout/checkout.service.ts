@@ -216,6 +216,7 @@ export class CheckoutService {
       .createQueryBuilder('checkout')
       .leftJoinAndSelect('checkout.address', 'address')
       .leftJoinAndSelect('checkout.basket', 'basket')
+
       .leftJoinAndSelect('basket.orderProducts', 'orderProduct')
       .where('checkout.id = :id', { id: created.id })
       .getOne();

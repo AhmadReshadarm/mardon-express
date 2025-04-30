@@ -19,9 +19,6 @@ export class OrderProduct {
   @Column()
   productPrice: number;
 
-  @Column({ nullable: true })
-  productSize: string;
-
   @IsNotEmpty()
   @PrimaryColumn({ nullable: false })
   basketId: string;
@@ -34,18 +31,12 @@ export class OrderProduct {
   @Column()
   productVariantId: string;
 
-  constructor(args?: {
-    productId: string;
-    qty: number;
-    productSize: string;
-    inBasket: Basket;
-    productVariantId: string;
-  }) {
+  constructor(args?: { productId: string; qty: number; inBasket: Basket; productVariantId: string }) {
     if (args) {
       this.productId = args.productId;
       this.qty = args.qty;
       this.inBasket = args.inBasket;
-      (this.productSize = args.productSize), (this.productVariantId = args.productVariantId);
+      this.productVariantId = args.productVariantId;
       this.basketId = args.inBasket.id;
     }
   }

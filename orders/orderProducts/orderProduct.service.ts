@@ -5,16 +5,7 @@ import { ErrorCode } from '../../core/domain/error/error.code';
 import { OrderProduct, Product } from '../../core/entities';
 import { HttpStatus } from '../../core/lib/http-status';
 import axios from 'axios';
-import {
-  OrderProductDTO,
-  OrderProductQueryDTO,
-  OrderProductResponse,
-  ProductDTO,
-  UserAuth,
-  UserDTO,
-} from '../order.dtos';
-import { scope } from '../../core/middlewares/access.user';
-import { Role } from '../../core/enums/roles.enum';
+import { OrderProductQueryDTO, OrderProductResponse, UserDTO } from '../order.dtos';
 import { v4 } from 'uuid';
 import { PaginationDTO } from '../../core/lib/dto';
 
@@ -26,10 +17,7 @@ export class OrderProductService {
     this.orderProductRepository = dataSource.getRepository(OrderProduct);
   }
 
-  async getOrderProducts(
-    queryParams: OrderProductQueryDTO,
-    authToken: string,
-  ): Promise<PaginationDTO<OrderProductResponse>> {
+  async getOrderProducts(queryParams: OrderProductQueryDTO): Promise<PaginationDTO<OrderProductResponse>> {
     const {
       productId,
       userId,
@@ -81,15 +69,6 @@ export class OrderProductService {
     const foryous = await this.orderProductRepository.find();
     return foryous;
   }
-  // async getOrderProductEntity(id: string): Promise<OrderProduct> {
-  //   const orderProduct = await this.orderProductRepository.findOneOrFail({
-  //     where: {
-  //       id: Equal(id),
-  //     }
-  //   });
-  //
-  //   return orderProduct;
-  // }
 
   async getOrderProduct(id: string, authToken: string): Promise<OrderProductResponse> {
     const queryBuilder = await this.orderProductRepository
@@ -142,10 +121,7 @@ export class OrderProductService {
     return lastElement[0] ? String(+lastElement[0].id + 1) : String(1);
   }
 
-  async createOrderProduct(
-    newOrderProduct: OrderProduct,
-    // , authToken: string
-  ): Promise<OrderProduct> {
+  async createOrderProduct(newOrderProduct: OrderProduct): Promise<OrderProduct> {
     const product = await this.getProductById(newOrderProduct.productId);
     const productVariant = product?.productVariants.find(variant => variant.id === newOrderProduct.productVariantId);
 
@@ -154,41 +130,14 @@ export class OrderProductService {
 
     const orderProduct = await this.orderProductRepository.save(newOrderProduct);
 
-    // if (!await this.validation(orderProduct.id, authToken)) {
-    //   await this.orderProductRepository.remove(orderProduct)
-    //   throw new CustomExternalError([ErrorCode.FORBIDDEN], HttpStatus.FORBIDDEN);
-    // }
-
     return orderProduct;
   }
-  // orderProductDTO: OrderProduct
-  async updateOrderProduct(id: string, qty?: number, productSize?: string) {
-    // const orderProduct = await this.orderProductRepository
-    //   .createQueryBuilder('orderProduct')
-    //   .leftJoinAndSelect('orderProduct.inBasket', 'basket')
-    //   .where('orderProduct.id = :id', { id: id })
-    //   .getOne();
-
-    // const newOrderProduct = {} as OrderProduct;
-
-    // Object.assign(newOrderProduct, orderProduct);
-    // newOrderProduct.qty = orderProductDTO.qty;
-    // newOrderProduct.productSize = orderProductDTO.productSize;
-
-    // // if (user) {
-    // //   await this.isUserOrderProductOwner(newOrderProduct, user);
-    // // }
-
-    // await this.orderProductRepository.remove(orderProduct!);
-
-    // return this.orderProductRepository.save(newOrderProduct);
-
+  async updateOrderProduct(id: string, qty?: number) {
     await this.orderProductRepository
       .createQueryBuilder()
       .update()
       .set({
         qty: qty,
-        productSize: productSize,
       })
       .where('id = :id', { id: id })
       .execute();
@@ -198,27 +147,6 @@ export class OrderProductService {
       .leftJoinAndSelect('orderProduct.inBasket', 'basket')
       .where('orderProduct.id = :id', { id: id })
       .getOne();
-
-    //  await this.commentRepository
-    //    .createQueryBuilder()
-    //    .update()
-    //    .set({
-    //      text: commentDTO.text,
-    //    })
-    //    .where('id = :id', { id: id })
-    //    .execute();
-    //  const queryBuilder = this.commentRepository
-    //    .createQueryBuilder('comment')
-    //    .leftJoinAndSelect('comment.review', 'review')
-    //    .leftJoinAndSelect('comment.reactions', 'reactions');
-    //  if (reviewId) {
-    //    queryBuilder.andWhere('review.id = :id', { id: reviewId });
-    //  }
-
-    //  queryBuilder.orderBy(`comment.createdAt`, 'ASC').skip(0).take(1000);
-    //  const comments = await queryBuilder.getMany();
-    //  const result = comments.map(async comment => await this.mergeCommentUserId(comment, ''));
-    //  return await Promise.all(result);
   }
 
   async removeOrderProduct(id: string) {
@@ -230,12 +158,6 @@ export class OrderProductService {
 
     return this.orderProductRepository.remove(orderProduct);
   }
-
-  // isUserOrderProductOwner(orderProduct: OrderProduct, user: UserAuth) {
-  //   if (scope(String(orderProduct.userId), String(user.id)) && user.role !== Role.Admin) {
-  //     throw new CustomExternalError([ErrorCode.FORBIDDEN], HttpStatus.FORBIDDEN);
-  //   }
-  // }
 
   async validation(id: string, authToken: string): Promise<boolean> {
     const orderProduct = (await this.getOrderProduct(id, authToken)) as any;
@@ -253,10 +175,8 @@ export class OrderProductService {
       id: orderProduct.id,
       product: product,
       productVariant: productVariant,
-      // user: await this.getUserById(orderProduct.userId, authToken) ?? orderProduct.userId,
       qty: orderProduct.qty,
       productPrice: orderProduct.productPrice,
-      productSize: orderProduct.productSize,
       inBasket: orderProduct.inBasket,
     };
   }

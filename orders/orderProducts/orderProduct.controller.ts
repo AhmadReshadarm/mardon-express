@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
 import { singleton } from 'tsyringe';
-import { Controller, Delete, Get, Middleware, Put } from '../../core/decorators';
+import { Controller, Get, Middleware } from '../../core/decorators';
 import { Role } from '../../core/enums/roles.enum';
 import { HttpStatus } from '../../core/lib/http-status';
-import { isAdmin, isUser, verifyToken } from '../../core/middlewares';
+import { isUser, verifyToken } from '../../core/middlewares';
 import { OrderProductService } from './orderProduct.service';
 
 @singleton()
@@ -18,7 +18,7 @@ export class OrderProductController {
       req.query.userId = String(resp.locals.user.id);
     }
 
-    const orderProducts = await this.orderProductService.getOrderProducts(req.query, req.headers.authorization!);
+    const orderProducts = await this.orderProductService.getOrderProducts(req.query);
 
     resp.json(orderProducts);
   }
@@ -32,14 +32,6 @@ export class OrderProductController {
     resp.json(orderProduct);
   }
 
-  // @Put(':id')
-  // async updateOrderProduct(req: Request, resp: Response) {
-  //   const { id } = req.params;
-  //   const orderProduct = await this.orderProductService.updateOrderProduct(id, req.body);
-
-  //   resp.json(orderProduct);
-  // }
-
   @Get('inner')
   async innerGet(req: Request, resp: Response) {
     const { secretKey } = req.body;
@@ -51,13 +43,4 @@ export class OrderProductController {
 
     resp.json(orders);
   }
-
-  // @Delete(':id')
-  // @Middleware([verifyToken, isAdmin])
-  // async removeOrderProduct(req: Request, resp: Response) {
-  //   const { id } = req.params;
-  //   const removed = await this.orderProductService.removeOrderProduct(id);
-
-  //   resp.status(HttpStatus.OK).json(removed);
-  // }
 }

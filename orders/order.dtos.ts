@@ -35,7 +35,6 @@ export interface OrderProductResponse {
   qty: number;
   productPrice: number;
   productVariant: ProductVariant | undefined;
-  productSize: string;
 }
 
 export interface OrderProductQueryDTO {
