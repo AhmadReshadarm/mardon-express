@@ -1,9 +1,8 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "lib": [
-      "es2019"
-    ],
+    "downlevelIteration": true,
+    "lib": ["es2019"],
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "module": "commonjs",
@@ -16,6 +15,6 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "moduleResolution": "node",
-    "baseUrl": "./",
-  },
+    "baseUrl": "./"
+  }
 }
