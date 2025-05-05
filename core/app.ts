@@ -35,7 +35,7 @@ export class App {
         : morgan('dev'),
     );
     server.use(cors({ exposedHeaders: ['Content-Disposition'] }));
-    server.use(json());
+    server.use(json({ limit: '50mb' }));
     server.use(urlencoded({ extended: false }));
     server.use(compression());
     server.use((request, response, next): void => {
