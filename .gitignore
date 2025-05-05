@@ -10,6 +10,8 @@
 docker-compose.local.yml
 .env.lunch.file
 
+temp.json
+
 
 .idea
 experment.txt
