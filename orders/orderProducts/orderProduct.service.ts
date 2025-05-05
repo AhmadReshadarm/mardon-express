@@ -136,6 +136,7 @@ export class OrderProductService {
     newOrderProduct.productPrice = productVariant?.price ?? 0;
     newOrderProduct.id = v4();
     newOrderProduct.inBasket = basket;
+    newOrderProduct.basketId = basket.id;
 
     await this.orderProductRepository.save(newOrderProduct);
 
