@@ -56,17 +56,17 @@ export class BasketController {
     }
   }
 
-  @Put(':id')
-  async updateBasket(req: Request, resp: Response) {
-    const { id } = req.params;
+  // @Put(':id')
+  // async updateBasket(req: Request, resp: Response) {
+  //   const { id } = req.params;
 
-    try {
-      const updated = await this.basketService.updateBasket(id, req.body);
-      resp.status(HttpStatus.OK).json(updated);
-    } catch (error) {
-      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
-    }
-  }
+  //   try {
+  //     const updated = await this.basketService.updateBasket(id, req.body);
+  //     resp.status(HttpStatus.OK).json(updated);
+  //   } catch (error) {
+  //     resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
+  //   }
+  // }
 
   @Delete(':id')
   @Middleware([verifyToken, isUser])

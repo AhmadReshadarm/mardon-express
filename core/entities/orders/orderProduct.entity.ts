@@ -4,11 +4,13 @@ import { IsNotEmpty, Min } from 'class-validator';
 
 @Entity()
 export class OrderProduct {
-  @Column({ unique: true })
+  // @Column({ unique: true })
+  @PrimaryColumn({ unique: true })
   id: string;
 
   @IsNotEmpty()
-  @PrimaryColumn()
+  // @PrimaryColumn()
+  @Column()
   productId: string;
 
   @IsNotEmpty()
@@ -20,7 +22,8 @@ export class OrderProduct {
   productPrice: number;
 
   @IsNotEmpty()
-  @PrimaryColumn({ nullable: false })
+  // @PrimaryColumn({ nullable: false })
+  @Column({ nullable: false })
   basketId: string;
 
   @IsNotEmpty()

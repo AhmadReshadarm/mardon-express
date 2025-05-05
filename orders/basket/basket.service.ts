@@ -109,6 +109,7 @@ export class BasketService {
     return this.basketRepository.save(newBasket);
   }
 
+  // this is an old methon that is currently not being used 👇
   // async updateBasket(id: string, basketDTO: Basket) {
   //   const basket = await this.basketRepository.findOneOrFail({
   //     where: {
@@ -132,130 +133,59 @@ export class BasketService {
 
   //   const orderProducts = await Promise.all(promises);
 
-  //   let counter = 0;
-  //   const updateOrderProductDetails = async () => {
-  //     if (counter < basketDTO.orderProducts.length) {
-  //       const orderProduct = await this.orderProductRepository.findOne({
-  //         where: {
-  //           productId: Equal(basketDTO.orderProducts[counter].productId),
-  //           basketId: Equal(basket.id),
-  //         },
-  //       });
+  //   // let counter = 0;
+  //   // const updateOrderProductDetails = async () => {
+  //   //   if (counter < basketDTO.orderProducts.length) {
+  //   //     const orderProduct = await this.orderProductRepository.findOne({
+  //   //       where: {
+  //   //         productId: Equal(basketDTO.orderProducts[counter].productId),
+  //   //         basketId: Equal(basket.id),
+  //   //       },
+  //   //     });
 
-  //       if (orderProduct && orderProduct.qty !== basketDTO.orderProducts[counter].qty) {
-  //         const newOrderProduct = await this.orderProductService.updateOrderProduct(
-  //           orderProduct.id,
-  //           basketDTO.orderProducts[counter].qty,
-  //         );
-  //         const curOrderProduct = orderProducts.find(orderProduct => orderProduct.id === newOrderProduct?.id)!;
-  //         curOrderProduct.qty = basketDTO.orderProducts[counter].qty;
-  //       }
-  //       if (orderProduct) {
-  //         const newOrderProduct = await this.orderProductService.updateOrderProduct(
-  //           orderProduct.id,
-  //           basketDTO.orderProducts[counter].qty ?? 1,
-  //         );
-  //         const curOrderProduct = orderProducts.find(orderProduct => orderProduct.id === newOrderProduct?.id)!;
-  //       }
+  //   //     if (orderProduct && orderProduct.qty !== basketDTO.orderProducts[counter].qty) {
+  //   //       const newOrderProduct = await this.orderProductService.updateOrderProduct(
+  //   //         orderProduct.id,
+  //   //         basketDTO.orderProducts[counter].qty,
+  //   //       );
+  //   //       const curOrderProduct = orderProducts.find(orderProduct => orderProduct.id === newOrderProduct?.id)!;
+  //   //       curOrderProduct.qty = basketDTO.orderProducts[counter].qty;
+  //   //     }
+  //   //     if (orderProduct) {
+  //   //       const newOrderProduct = await this.orderProductService.updateOrderProduct(
+  //   //         orderProduct.id,
+  //   //         basketDTO.orderProducts[counter].qty ?? 1,
+  //   //       );
+  //   //       const curOrderProduct = orderProducts.find(orderProduct => orderProduct.id === newOrderProduct?.id)!;
+  //   //     }
 
-  //       if (!orderProduct) {
-  //         const orderProductData = new OrderProduct({
-  //           productId: basketDTO.orderProducts[counter].productId,
-  //           qty: basketDTO.orderProducts[counter].qty,
-  //           inBasket: basket,
-  //           productVariantId: basketDTO.orderProducts[counter].productVariantId,
-  //         });
-  //         const newOrderProduct = await this.orderProductService.createOrderProduct(orderProductData);
-  //         orderProducts.push(await this.orderProductService.mergeOrderProduct(newOrderProduct));
-  //       }
-  //       counter = counter + 1;
-  //       updateOrderProductDetails();
-  //     }
-  //   };
+  //   //     if (!orderProduct) {
+  //   //       const orderProductData = new OrderProduct({
+  //   //         productId: basketDTO.orderProducts[counter].productId,
+  //   //         qty: basketDTO.orderProducts[counter].qty,
+  //   //         inBasket: basket,
+  //   //         productVariantId: basketDTO.orderProducts[counter].productVariantId,
+  //   //       });
+  //   //       const newOrderProduct = await this.orderProductService.createOrderProduct(orderProductData);
+  //   //       orderProducts.push(await this.orderProductService.mergeOrderProduct(newOrderProduct));
+  //   //     }
+  //   //     counter = counter + 1;
+  //   //     updateOrderProductDetails();
+  //   //   }
+  //   // };
 
-  //   await updateOrderProductDetails();
-  //   function sleep(ms: number) {
-  //     return new Promise(resolve => setTimeout(resolve, ms));
-  //   }
+  //   // await updateOrderProductDetails();
+  //   // function sleep(ms: number) {
+  //   //   return new Promise(resolve => setTimeout(resolve, ms));
+  //   // }
 
-  //   await sleep(300);
+  //   // await sleep(300);
 
   //   return {
   //     ...basket,
   //     orderProducts,
   //   };
   // }
-
-  async updateBasket(id: string, basketDTO: Basket): Promise<BasketDTO> {
-    const basket = await this.basketRepository.findOneOrFail({
-      where: {
-        id: Equal(id),
-      },
-      relations: ['orderProducts'],
-    });
-
-    const productsToRemoveFromBasket: any[] = [];
-    const productsToUpdateInBasket: any[] = [];
-    let productsToAddInBasket: any[] = [];
-
-    basket.orderProducts.forEach(orderProductInDbBasket => {
-      const userProductBasket = basketDTO.orderProducts.find(
-        ({ productId }) => orderProductInDbBasket.productId === productId.toString(),
-      );
-
-      if (!userProductBasket) {
-        productsToRemoveFromBasket.push(orderProductInDbBasket);
-      }
-      if (userProductBasket && userProductBasket.qty !== orderProductInDbBasket.qty) {
-        productsToUpdateInBasket.push({ id: orderProductInDbBasket.id, qty: userProductBasket.qty });
-      }
-    });
-
-    // create
-    function getOrderProductKey(orderProduct: OrderProduct): string {
-      return String(orderProduct.productId);
-    }
-
-    const findDifference = (userBasket: OrderProduct[], dbBasket: OrderProduct[]): OrderProduct[] => {
-      const dbProductIds = new Set(dbBasket.map(item => getOrderProductKey(item)));
-      return userBasket.filter(userItem => !dbProductIds.has(getOrderProductKey(userItem)));
-    };
-
-    productsToAddInBasket = findDifference(basketDTO.orderProducts, basket.orderProducts);
-    if (productsToAddInBasket.length > 0) {
-      await Promise.all(
-        productsToAddInBasket?.map(async productsToAdd => {
-          const orderProductData = new OrderProduct({
-            productId: productsToAdd.productId,
-            qty: productsToAdd.qty,
-            inBasket: basket,
-            productVariantId: productsToAdd.productVariantId,
-          });
-          await this.orderProductService.createOrderProduct(orderProductData);
-        }),
-      );
-    }
-
-    // update
-    if (productsToUpdateInBasket.length > 0) {
-      await Promise.all(
-        productsToUpdateInBasket.map(async ProductToUpdate => {
-          await this.orderProductService.updateOrderProduct(ProductToUpdate.id, ProductToUpdate.qty);
-        }),
-      );
-    }
-
-    // remove
-    if (productsToRemoveFromBasket.length > 0) {
-      await Promise.all(
-        productsToRemoveFromBasket.map(async productToRemove => {
-          await this.orderProductRepository.remove(productToRemove);
-        }),
-      );
-    }
-
-    return await this.getBasket(id);
-  }
 
   async clearBasket(id: string) {
     const basket = await this.basketRepository.findOneOrFail({

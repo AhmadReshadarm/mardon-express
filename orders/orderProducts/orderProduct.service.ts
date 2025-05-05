@@ -2,19 +2,20 @@ import { singleton } from 'tsyringe';
 import { DataSource, Equal, Repository } from 'typeorm';
 import { CustomExternalError } from '../../core/domain/error/custom.external.error';
 import { ErrorCode } from '../../core/domain/error/error.code';
-import { OrderProduct, Product } from '../../core/entities';
+import { Basket, OrderProduct, Product } from '../../core/entities';
 import { HttpStatus } from '../../core/lib/http-status';
 import axios from 'axios';
-import { OrderProductQueryDTO, OrderProductResponse, UserDTO } from '../order.dtos';
+import { BasketDTO, OrderProductQueryDTO, OrderProductResponse, UserDTO } from '../order.dtos';
 import { v4 } from 'uuid';
 import { PaginationDTO } from '../../core/lib/dto';
 
 @singleton()
 export class OrderProductService {
   private orderProductRepository: Repository<OrderProduct>;
-
+  private basketRepository: Repository<Basket>;
   constructor(dataSource: DataSource) {
     this.orderProductRepository = dataSource.getRepository(OrderProduct);
+    this.basketRepository = dataSource.getRepository(Basket);
   }
 
   async getOrderProducts(queryParams: OrderProductQueryDTO): Promise<PaginationDTO<OrderProductResponse>> {
@@ -70,7 +71,7 @@ export class OrderProductService {
     return foryous;
   }
 
-  async getOrderProduct(id: string, authToken: string): Promise<OrderProductResponse> {
+  async getOrderProduct(id: string): Promise<OrderProductResponse> {
     const queryBuilder = await this.orderProductRepository
       .createQueryBuilder('orderProduct')
       .leftJoinAndSelect('orderProduct.inBasket', 'basket')
@@ -121,32 +122,54 @@ export class OrderProductService {
     return lastElement[0] ? String(+lastElement[0].id + 1) : String(1);
   }
 
-  async createOrderProduct(newOrderProduct: OrderProduct): Promise<OrderProduct> {
+  async createOrderProduct(id: string, newOrderProduct: OrderProduct): Promise<BasketDTO> {
+    const basket = await this.basketRepository.findOneOrFail({
+      where: {
+        id: Equal(id),
+      },
+      relations: ['orderProducts'],
+    });
+
     const product = await this.getProductById(newOrderProduct.productId);
     const productVariant = product?.productVariants.find(variant => variant.id === newOrderProduct.productVariantId);
 
     newOrderProduct.productPrice = productVariant?.price ?? 0;
     newOrderProduct.id = v4();
+    newOrderProduct.inBasket = basket;
 
-    const orderProduct = await this.orderProductRepository.save(newOrderProduct);
+    await this.orderProductRepository.save(newOrderProduct);
 
-    return orderProduct;
+    return await this.getBasket(id);
   }
-  async updateOrderProduct(id: string, qty?: number) {
-    await this.orderProductRepository
-      .createQueryBuilder()
-      .update()
-      .set({
-        qty: qty,
-      })
-      .where('id = :id', { id: id })
-      .execute();
 
-    return await this.orderProductRepository
-      .createQueryBuilder('orderProduct')
-      .leftJoinAndSelect('orderProduct.inBasket', 'basket')
-      .where('orderProduct.id = :id', { id: id })
+  async updateOrderProductQtyInCart(basketId: string, orderDTO: OrderProduct): Promise<any> {
+    await this.orderProductRepository.save({
+      ...orderDTO,
+      qty: orderDTO.qty,
+    });
+
+    return await this.getBasket(basketId);
+  }
+
+  async removeOrderProductFromCart(basketId: string, orderProductToRemove: OrderProduct): Promise<BasketDTO> {
+    await this.orderProductRepository.remove(orderProductToRemove);
+
+    return await this.getBasket(basketId);
+  }
+
+  async getBasket(id: string): Promise<BasketDTO> {
+    const queryBuilder = await this.basketRepository
+      .createQueryBuilder('basket')
+      .leftJoinAndSelect('basket.orderProducts', 'orderProduct')
+      .leftJoinAndSelect('basket.checkout', 'checkout')
+      .where('basket.id = :id', { id: id })
       .getOne();
+
+    if (!queryBuilder) {
+      throw new CustomExternalError([ErrorCode.ENTITY_NOT_FOUND], HttpStatus.NOT_FOUND);
+    }
+
+    return this.mergeBasket(queryBuilder);
   }
 
   async removeOrderProduct(id: string) {
@@ -160,9 +183,17 @@ export class OrderProductService {
   }
 
   async validation(id: string, authToken: string): Promise<boolean> {
-    const orderProduct = (await this.getOrderProduct(id, authToken)) as any;
+    const orderProduct = (await this.getOrderProduct(id)) as any;
 
     return String(orderProduct.user.id) === String(orderProduct.inBasket.userId);
+  }
+
+  getTotalAmount(products: OrderProduct[]): number {
+    return products.reduce((accum: number, product) => {
+      accum += product.qty * product.productPrice;
+
+      return accum;
+    }, 0);
   }
 
   async mergeOrderProduct(orderProduct: OrderProduct): Promise<OrderProductResponse> {
@@ -178,6 +209,19 @@ export class OrderProductService {
       qty: orderProduct.qty,
       productPrice: orderProduct.productPrice,
       inBasket: orderProduct.inBasket,
+    };
+  }
+
+  async mergeBasket(basket: Basket): Promise<BasketDTO> {
+    const orderProducts = basket.orderProducts.map(orderProduct => this.mergeOrderProduct(orderProduct));
+    return {
+      id: basket.id,
+      userId: basket.userId ?? null,
+      orderProducts: await Promise.all(orderProducts),
+      checkout: basket.checkout,
+      totalAmount: this.getTotalAmount(basket.orderProducts),
+      createdAt: basket.createdAt,
+      updatedAt: basket.updatedAt,
     };
   }
 }

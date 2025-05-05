@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { singleton } from 'tsyringe';
-import { Controller, Get, Middleware } from '../../core/decorators';
+import { Controller, Delete, Get, Middleware, Post, Put } from '../../core/decorators';
 import { Role } from '../../core/enums/roles.enum';
 import { HttpStatus } from '../../core/lib/http-status';
 import { isUser, verifyToken } from '../../core/middlewares';
@@ -27,9 +27,42 @@ export class OrderProductController {
   @Middleware([verifyToken, isUser])
   async getOrderProduct(req: Request, resp: Response) {
     const { id } = req.params;
-    const orderProduct = await this.orderProductService.getOrderProduct(id, req.headers.authorization!);
+    const orderProduct = await this.orderProductService.getOrderProduct(id);
 
     resp.json(orderProduct);
+  }
+
+  @Post(':id')
+  async createOrder(req: Request, resp: Response) {
+    const { id } = req.params;
+    try {
+      const orderProducts = await this.orderProductService.createOrderProduct(id, req.body);
+      resp.status(HttpStatus.OK).json(orderProducts);
+    } catch (error) {
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
+    }
+  }
+
+  @Put(':id')
+  async updateOrder(req: Request, resp: Response) {
+    const { id } = req.params;
+    try {
+      const orderProducts = await this.orderProductService.updateOrderProductQtyInCart(id, req.body);
+      resp.status(HttpStatus.OK).json(orderProducts);
+    } catch (error) {
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
+    }
+  }
+
+  @Delete(':id')
+  async removeOrder(req: Request, resp: Response) {
+    const { id } = req.params;
+    try {
+      const orderProducts = await this.orderProductService.removeOrderProductFromCart(id, req.body);
+      resp.status(HttpStatus.OK).json(orderProducts);
+    } catch (error) {
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
+    }
   }
 
   @Get('inner')
