@@ -6,6 +6,7 @@ import { Column, CreateDateColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, 
 // Brand,
 export interface ProductQueryDTO {
   readonly name?: string;
+  readonly userHistory?: string[];
   readonly artical?: string;
   readonly minPrice?: number;
   readonly maxPrice?: number;
