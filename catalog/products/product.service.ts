@@ -77,9 +77,9 @@ export class ProductService {
       });
     }
 
-    if (userHistory) {
-      queryBuilder.andWhere('product.id IN (:...ids)', { ids: userHistory });
-    }
+    // if (userHistory) {
+    //   queryBuilder.andWhere('product.id IN (:...ids)', { ids: userHistory });
+    // }
 
     if (minPrice) {
       queryBuilder.andWhere('productVariant.price >= :minPrice', { minPrice: minPrice });
@@ -111,22 +111,41 @@ export class ProductService {
     if (category) {
       queryBuilder.andWhere('category.url = :category', { category: category });
     }
-    // if (brands) {
-    //   queryBuilder.andWhere('brand.url IN (:...brands)', { brands: brands });
-    // }
-    // if (brand) {
-    //   queryBuilder.andWhere('brand.url = :brand', { brand: brand });
-    // }
     if (tags) {
       queryBuilder.andWhere('tag.url IN (:...tags)', { tags: tags });
     }
     if (tag) {
       queryBuilder.andWhere('tag.url = :tag', { tag: tag });
     }
+    if (userHistory) {
+      queryBuilder.andWhere('product.id IN (:...ids)', { ids: userHistory });
 
-    queryBuilder.orderBy(`product.${sortBy}`, orderBy).skip(offset).take(limit);
+      // Add custom ordering based on userHistory array position
+      const caseStatements = userHistory
+        .map((id, index) => `WHEN product.id = :userHistoryId${index} THEN ${index}`)
+        .join(' ');
+      const elseCase = userHistory.length;
+
+      queryBuilder
+        .addSelect(`CASE ${caseStatements} ELSE ${elseCase} END`, 'custom_order')
+        .orderBy('custom_order', 'ASC');
+
+      // Add parameters for each ID in history
+      userHistory.forEach((id, index) => {
+        queryBuilder.setParameter(`userHistoryId${index}`, id);
+      });
+    } else {
+      // Default sorting when no userHistory is provided
+      queryBuilder.orderBy(`product.${sortBy}`, orderBy);
+    }
+
+    queryBuilder.skip(offset).take(limit);
 
     const products = await queryBuilder.getMany();
+
+    // queryBuilder.orderBy(`product.${sortBy}`, orderBy).skip(offset).take(limit);
+
+    // const products = await queryBuilder.getMany();
 
     const results = products.map(async product => await this.mergeProduct(product));
 
