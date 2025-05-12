@@ -185,7 +185,6 @@ export class ProductService {
     const product = await this.productRepository
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.category', 'category')
-      // .leftJoinAndSelect('product.brand', 'brand')
       .leftJoinAndSelect('product.tags', 'tag')
       .leftJoinAndSelect('category.parameters', 'parameter')
       .leftJoinAndSelect('product.parameterProducts', 'parameterProducts')

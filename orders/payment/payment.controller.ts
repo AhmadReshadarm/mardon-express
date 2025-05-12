@@ -1,5 +1,5 @@
-import { IGetPaymentList, ICreateRefund, YooCheckout } from '@a2seven/yoo-checkout';
-import { isAdmin, isUser, verifyToken, verifyUserId } from '../../core/middlewares';
+import { IGetPaymentList, YooCheckout } from '@a2seven/yoo-checkout';
+import { isAdmin, isUser, verifyToken } from '../../core/middlewares';
 import { Request, Response } from 'express';
 import { singleton } from 'tsyringe';
 import { v4 } from 'uuid';

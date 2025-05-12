@@ -3,14 +3,14 @@ import { singleton } from 'tsyringe';
 import { DataSource, Equal, Repository } from 'typeorm';
 import { CustomExternalError } from '../../core/domain/error/custom.external.error';
 import { ErrorCode } from '../../core/domain/error/error.code';
-import { Checkout } from '../../core/entities';
+import { Checkout, User } from '../../core/entities';
 import { Subscription } from '../../core/entities';
 import { Role } from '../../core/enums/roles.enum';
 import { PaginationDTO } from '../../core/lib/dto';
 import { HttpStatus } from '../../core/lib/http-status';
 import { scope } from '../../core/middlewares/access.user';
 import { OrderProductService } from '../../orders/orderProducts/orderProduct.service';
-import { CheckoutDTO, CheckoutQueryDTO, UserAuth, UserDTO } from '../order.dtos';
+import { CheckoutDTO, CheckoutQueryDTO, UserAuth, userDTO } from '../order.dtos';
 import { createTransport, Transporter } from 'nodemailer';
 import { MAIL_FROM, transportConfig } from './config';
 import { MailOptionsDTO } from 'orders/mailer.dtos';
@@ -19,10 +19,12 @@ import { MailOptionsDTO } from 'orders/mailer.dtos';
 export class CheckoutService {
   private checkoutRepository: Repository<Checkout>;
   private subscribersRepository: Repository<Subscription>;
+  private userRepository: Repository<User>;
   private smptTransporter: Transporter;
   constructor(dataSource: DataSource, private orderProductService: OrderProductService) {
     this.checkoutRepository = dataSource.getRepository(Checkout);
     this.subscribersRepository = dataSource.getRepository(Subscription);
+    this.userRepository = dataSource.getRepository(User);
     this.smptTransporter = createTransport(transportConfig);
   }
 
@@ -121,53 +123,6 @@ export class CheckoutService {
     return this.mergeCheckout(queryBuilder, authToken);
   }
 
-  async getUserById(id: string): Promise<UserDTO | undefined> {
-    const options = {
-      url: `${process.env.USERS_DB}/users/inner/${id}`,
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json;charset=UTF-8',
-      },
-      data: {
-        secretKey: process.env.INNER_AUTH_CALL_SECRET_KEY,
-      },
-    };
-    try {
-      const res = await axios(options);
-      return res.data;
-    } catch (e: any) {
-      if (e.name === 'AxiosError' && e.response.status === 403) {
-        throw new CustomExternalError([ErrorCode.FORBIDDEN], HttpStatus.FORBIDDEN);
-      }
-    }
-  }
-
-  async updateUserById(payload: { id: string; firstName: string; lastName: string }): Promise<UserDTO | undefined> {
-    const { id, firstName, lastName } = payload;
-    const options = {
-      url: `${process.env.USERS_DB}/users/inner/${id}`,
-      method: 'PUT',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json;charset=UTF-8',
-      },
-      data: {
-        secretKey: process.env.INNER_AUTH_CALL_SECRET_KEY,
-        firstName,
-        lastName,
-      },
-    };
-    try {
-      const res = await axios(options);
-      return res.data;
-    } catch (e: any) {
-      if (e.name === 'AxiosError' && e.response.status === 403) {
-        throw new CustomExternalError([ErrorCode.FORBIDDEN], HttpStatus.FORBIDDEN);
-      }
-    }
-  }
-
   async createSubscriber(newSubscrition: Subscription): Promise<Subscription | null> {
     return this.subscribersRepository.save(newSubscrition);
   }
@@ -205,13 +160,6 @@ export class CheckoutService {
 
   async createCheckout(newCheckout: Checkout): Promise<Checkout | null> {
     const created = await this.checkoutRepository.save(newCheckout);
-    const userPaload = {
-      id: newCheckout.userId,
-      firstName: newCheckout.address.receiverName.split(' ')[0] ?? newCheckout.address.receiverName,
-      lastName: newCheckout.address.receiverName.split(' ')[1] ?? '',
-    };
-    await this.updateUserById(userPaload);
-
     const checkout = await this.checkoutRepository
       .createQueryBuilder('checkout')
       .leftJoinAndSelect('checkout.address', 'address')
@@ -221,28 +169,10 @@ export class CheckoutService {
       .where('checkout.id = :id', { id: created.id })
       .getOne();
 
-    // if (!(await this.validation(checkout.id, authToken))) {
-    //   await this.checkoutRepository.remove(checkout);
-    //   throw new CustomExternalError([ErrorCode.FORBIDDEN], HttpStatus.FORBIDDEN);
-    // }
-
     return checkout;
   }
 
   async updateCheckout(id: string, checkoutDTO: Checkout, user: UserAuth): Promise<CheckoutDTO> {
-    // const checkout = await this.checkoutRepository.findOneOrFail({
-    //   where: {
-    //     id: Equal(id),
-    //   },
-    // });
-
-    // await this.isUserCheckoutOwner(checkout, user);
-
-    // return this.checkoutRepository.save({
-    //   ...checkout,
-    //   ...checkoutDTO,
-    // });
-
     await this.checkoutRepository
       .createQueryBuilder()
       .update()
@@ -305,7 +235,7 @@ export class CheckoutService {
       id: checkout.id,
       // paymentId: checkout.paymentId,
       totalAmount: checkout.totalAmount,
-      user: (await this.getUserById(checkout.userId)) ?? checkout.userId,
+      user: (await this.getUser(checkout.userId)) ?? checkout.userId,
       createdAt: checkout.createdAt,
       updatedAt: checkout.updatedAt,
       basket: {
@@ -350,5 +280,15 @@ export class CheckoutService {
     if (!options.to || !options.html || !options.subject) {
       throw new CustomExternalError([ErrorCode.MAIL_OPTIONS], HttpStatus.BAD_REQUEST);
     }
+  }
+  // get user by ID
+  async getUser(id: string): Promise<userDTO> {
+    const user = await this.userRepository.findOneOrFail({
+      where: {
+        id: Equal(id),
+      },
+    });
+    const { password, ...others } = user;
+    return others;
   }
 }

@@ -1,6 +1,20 @@
 import { CheckoutStatus } from '../core/enums/checkout-status.enum';
-import { Address, Basket, Checkout, Product, ProductVariant } from '../core/entities';
+import {
+  Address,
+  Basket,
+  Category,
+  Checkout,
+  Color,
+  Comment,
+  ParameterProducts,
+  Product,
+  ProductVariant,
+  ReactionReview,
+  Review,
+  Tag,
+} from '../core/entities';
 import { Role } from '../core/enums/roles.enum';
+import { RatingDTO } from 'core/lib/dto';
 
 export interface UserDTO {
   id: string;
@@ -9,14 +23,14 @@ export interface UserDTO {
   email: string;
 }
 
-export interface ProductDTO {
-  name: string;
-  price: number;
-  desc?: string;
-  available: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
+// export interface ProductDTO {
+//   name: string;
+//   price: number;
+//   desc?: string;
+//   available: boolean;
+//   createdAt: Date;
+//   updatedAt: Date;
+// }
 
 export interface OrderProductDTO {
   id: string;
@@ -152,4 +166,57 @@ export interface ShippingDTO {
   total: number;
   order_number: string;
   billingDate: Date;
+}
+
+export interface ProductQueryDTO {
+  readonly ids?: string[];
+  readonly id?: string;
+  readonly sortBy?: string;
+  readonly orderBy?: 'DESC' | 'ASC';
+  readonly offset?: number;
+  readonly limit?: number;
+}
+
+export interface ProductDTO {
+  readonly id: string;
+  readonly name: string;
+  readonly price: number;
+  readonly oldPrice?: number;
+  readonly desc: string;
+  readonly available: boolean;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
+  readonly images: string | null;
+  readonly url: string;
+  readonly category: Category;
+  readonly colors?: Color[];
+  readonly tags?: Tag[];
+  readonly rating: RatingDTO | null;
+  readonly reviews: Review[] | null;
+  readonly parameterProducts: ParameterProducts[];
+  readonly productVariants: ProductVariant[];
+  readonly keywords: string;
+  readonly shortDesc: string;
+}
+
+export interface ReviewQueryDTO {
+  id?: string;
+  productId?: string;
+  showOnMain?: boolean;
+  sortBy?: 'productId' | 'userId';
+  orderBy?: 'DESC' | 'ASC';
+  limit?: number;
+  offset?: number;
+}
+
+export interface userDTO {
+  readonly id: string;
+  readonly firstName: string;
+  readonly lastName: string;
+  readonly email: string;
+  readonly isVerified: boolean;
+  readonly role: Role;
+  readonly image: string;
+  readonly createdAt?: Date;
+  readonly updatedAt?: Date;
 }

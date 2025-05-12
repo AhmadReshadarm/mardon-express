@@ -124,7 +124,6 @@ export interface ProductDTO {
   readonly name: string;
   readonly price: number;
   readonly oldPrice?: number;
-  // readonly wholeSalePrice?: number;
   readonly desc: string | null;
   readonly available: boolean;
   readonly createdAt: Date;
@@ -132,7 +131,6 @@ export interface ProductDTO {
   readonly images: string | null;
   readonly url: string;
   readonly category: Category;
-  // readonly brand: Brand;
   readonly colors?: Color[];
   readonly tags?: Tag[];
   readonly rating: RatingDTO | null;

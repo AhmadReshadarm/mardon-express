@@ -1,6 +1,23 @@
 import { DataSource } from 'typeorm';
-import { Basket, Checkout, OrderProduct, Subscription } from '../core/entities';
-import { Address } from '../core/entities';
+import {
+  Basket,
+  Category,
+  Checkout,
+  Color,
+  Comment,
+  OrderProduct,
+  Parameter,
+  ParameterProducts,
+  Product,
+  ProductVariant,
+  ReactionComment,
+  ReactionReview,
+  Review,
+  Subscription,
+  Tag,
+  Address,
+  User,
+} from '../core/entities';
 
 const dataSource = new DataSource({
   type: 'mysql',
@@ -12,7 +29,27 @@ const dataSource = new DataSource({
   logging: true,
   synchronize: true,
   migrationsRun: false,
-  entities: [OrderProduct, Basket, Address, Checkout, Subscription],
+  entities: [
+    OrderProduct,
+    Basket,
+    Address,
+    Checkout,
+    Subscription,
+    // products decoupeled entities
+    Product,
+    Category,
+    Color,
+    Parameter,
+    Tag,
+    ParameterProducts,
+    ProductVariant,
+    Review,
+    Comment,
+    ReactionComment,
+    ReactionReview,
+    // users data soucrce
+    User,
+  ],
 });
 
 export default dataSource;

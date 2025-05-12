@@ -89,39 +89,21 @@ export class CheckoutController {
         receiverPhone: req.body.address.receiverPhone,
         receiverEmail: user.role !== Role.Admin ? user.email : req.body.address.receiverEmail,
         address: req.body.address.address,
-        roomOrOffice: req.body.address.roomOrOffice,
-        door: req.body.address.door,
-        floor: req.body.address.floor,
-        rignBell: req.body.address.rignBell,
-        zipCode: req.body.address.zipCode,
+        // roomOrOffice: req.body.address.roomOrOffice,
+        // door: req.body.address.door,
+        // floor: req.body.address.floor,
+        // rignBell: req.body.address.rignBell,
+        // zipCode: req.body.address.zipCode,
         comment: req.body.comment,
         cart: req.body.basket,
       };
 
       const cidImageMap: Record<string, string> = {}; // Map to store CID values
 
-      // // Embedded Favicon from URL
-      // const faviconCid = 'favicon';
-      // cidImageMap['favicon'] = faviconCid;
-      // const faviconAttachment: EmbeddedImage = {
-      //   filename: 'favicon.svg',
-      //   href: 'https://nbhoz.ru/favicon.svg', // URL for favicon
-      //   cid: faviconCid,
-      // };
-
-      // // Embedded emailStyle.css from URL (consider inline styles for email compatibility)
-      // const emailStyleCid = 'emailStyle';
-      // cidImageMap['emailStyle'] = emailStyleCid;
-      // const emailStyleAttachment: EmbeddedImage = {
-      //   filename: 'emailStyle.css',
-      //   href: 'https://nbhoz.ru/emailStyle.css', // URL for emailStyle.css
-      //   cid: emailStyleCid,
-      // };
-
       const productAttachments: EmbeddedImage[] = [];
       if (payload.cart?.orderProducts) {
         for (const orderproduct of payload.cart.orderProducts) {
-          const imageName = orderproduct.productVariant?.images?.split(',')[0];
+          const imageName = orderproduct.productVariant?.images?.split(', ')[0];
           if (imageName) {
             const imageUrl = `https://nbhoz.ru/api/images/${imageName}`; // Construct product image URL
             const productImageCid = `productImage_${orderproduct.productVariant?.artical}`;
@@ -135,7 +117,6 @@ export class CheckoutController {
         }
       }
 
-      // const invoiceData: string = generateInvoiceTemplet(payload);
       const invoiceData: string = generateInvoiceTemplet(payload, cidImageMap);
 
       const emailAdminPayload = {
@@ -181,6 +162,7 @@ export class CheckoutController {
         to: 'info@nbhoz.ru',
         subject: req.body.subject,
         html: req.body.html,
+        attachments: req.body.attachments,
       };
       adminResult = await this.checkoutService.sendMail(payload);
       payload.to = 'armaan0080@yahoo.com';
