@@ -66,7 +66,7 @@ export class BasketService {
     };
   }
 
-  async getBasket(id: string): Promise<BasketDTO> {
+  async getBasket(id: string, offset: number, limit: number): Promise<BasketDTO> {
     const queryBuilder = await this.basketRepository
       .createQueryBuilder('basket')
       .leftJoinAndSelect('basket.orderProducts', 'orderProduct')
@@ -78,7 +78,8 @@ export class BasketService {
       throw new CustomExternalError([ErrorCode.ENTITY_NOT_FOUND], HttpStatus.NOT_FOUND);
     }
 
-    return this.mergeBasket(queryBuilder);
+    // return this.mergeBasket(queryBuilder);
+    return this.orderProductService.mergeBasket(queryBuilder, offset, limit);
   }
 
   async getUserById(id: string, authToken: string): Promise<UserDTO | undefined> {

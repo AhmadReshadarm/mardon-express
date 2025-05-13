@@ -18,16 +18,21 @@ export class BasketController {
       const baskets = await this.basketService.getBaskets(req.query);
       resp.json(baskets);
     } catch (error) {
-      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(`somthing went wrong ${error}`);
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
     }
   }
 
   @Get(':id')
   async getBasket(req: Request, resp: Response) {
     const { id } = req.params;
-    const basket = await this.basketService.getBasket(id);
+    const { offset, limit } = req.query;
+    try {
+      const basket = await this.basketService.getBasket(id, Number(offset), Number(limit));
 
-    resp.json(basket);
+      resp.json(basket);
+    } catch (error) {
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
+    }
   }
 
   @Post()
@@ -40,7 +45,7 @@ export class BasketController {
 
       resp.status(HttpStatus.CREATED).json(created);
     } catch (error) {
-      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(`somthing went wrong ${error}`);
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
     }
   }
 
@@ -52,7 +57,7 @@ export class BasketController {
       const updated = await this.basketService.clearBasket(id);
       resp.status(HttpStatus.OK).json(updated);
     } catch (error) {
-      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(`somthing went wrong ${error}`);
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
     }
   }
 
@@ -77,7 +82,7 @@ export class BasketController {
 
       resp.status(HttpStatus.OK).json(removed);
     } catch (error) {
-      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(`somthing went wrong ${error}`);
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
     }
   }
 }

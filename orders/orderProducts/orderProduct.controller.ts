@@ -35,8 +35,9 @@ export class OrderProductController {
   @Post(':id')
   async createOrder(req: Request, resp: Response) {
     const { id } = req.params;
+    const { offset, limit } = req.body;
     try {
-      const orderProducts = await this.orderProductService.createOrderProduct(id, req.body);
+      const orderProducts = await this.orderProductService.createOrderProduct(id, req.body, offset, limit);
       resp.status(HttpStatus.OK).json(orderProducts);
     } catch (error) {
       resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
@@ -46,8 +47,9 @@ export class OrderProductController {
   @Put(':id')
   async updateOrder(req: Request, resp: Response) {
     const { id } = req.params;
+    const { offset, limit } = req.body;
     try {
-      const orderProducts = await this.orderProductService.updateOrderProductQtyInCart(id, req.body);
+      const orderProducts = await this.orderProductService.updateOrderProductQtyInCart(id, req.body, offset, limit);
       resp.status(HttpStatus.OK).json(orderProducts);
     } catch (error) {
       resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
@@ -57,8 +59,9 @@ export class OrderProductController {
   @Delete(':id')
   async removeOrder(req: Request, resp: Response) {
     const { id } = req.params;
+    const { offset, limit } = req.body;
     try {
-      const orderProducts = await this.orderProductService.removeOrderProductFromCart(id, req.body);
+      const orderProducts = await this.orderProductService.removeOrderProductFromCart(id, req.body, offset, limit);
       resp.status(HttpStatus.OK).json(orderProducts);
     } catch (error) {
       resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);

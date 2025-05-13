@@ -10,6 +10,7 @@ import {
   OrderProductQueryDTO,
   OrderProductResponse,
   ProductDTO,
+  ProductQueryDTO,
   // ProductQueryDTO,
   ReviewQueryDTO,
   // UserDTO,
@@ -134,7 +135,12 @@ export class OrderProductService {
     return lastElement[0] ? String(+lastElement[0].id + 1) : String(1);
   }
 
-  async createOrderProduct(id: string, newOrderProduct: OrderProduct): Promise<BasketDTO> {
+  async createOrderProduct(
+    id: string,
+    newOrderProduct: OrderProduct,
+    offset: number,
+    limit: number,
+  ): Promise<BasketDTO> {
     const basket = await this.basketRepository.findOneOrFail({
       where: {
         id: Equal(id),
@@ -152,25 +158,35 @@ export class OrderProductService {
 
     await this.orderProductRepository.save(newOrderProduct);
 
-    return await this.getBasket(id);
+    return await this.getBasket(id, offset, limit);
   }
 
-  async updateOrderProductQtyInCart(basketId: string, orderDTO: OrderProduct): Promise<any> {
+  async updateOrderProductQtyInCart(
+    basketId: string,
+    orderDTO: OrderProduct,
+    offset: number,
+    limit: number,
+  ): Promise<any> {
     await this.orderProductRepository.save({
       ...orderDTO,
       qty: orderDTO.qty,
     });
 
-    return await this.getBasket(basketId);
+    return await this.getBasket(basketId, offset, limit);
   }
 
-  async removeOrderProductFromCart(basketId: string, orderProductToRemove: OrderProduct): Promise<BasketDTO> {
+  async removeOrderProductFromCart(
+    basketId: string,
+    orderProductToRemove: OrderProduct,
+    offset: number,
+    limit: number,
+  ): Promise<BasketDTO> {
     await this.orderProductRepository.remove(orderProductToRemove);
 
-    return await this.getBasket(basketId);
+    return await this.getBasket(basketId, offset, limit);
   }
 
-  async getBasket(id: string): Promise<BasketDTO> {
+  async getBasket(id: string, offset: number, limit: number): Promise<BasketDTO> {
     const queryBuilder = await this.basketRepository
       .createQueryBuilder('basket')
       .leftJoinAndSelect('basket.orderProducts', 'orderProduct')
@@ -182,7 +198,7 @@ export class OrderProductService {
       throw new CustomExternalError([ErrorCode.ENTITY_NOT_FOUND], HttpStatus.NOT_FOUND);
     }
 
-    return this.mergeBasket(queryBuilder);
+    return this.mergeBasket(queryBuilder, offset, limit);
   }
 
   async removeOrderProduct(id: string) {
@@ -215,9 +231,11 @@ export class OrderProductService {
       variant => variant.id.toString() === orderProduct.productVariantId.toString(),
     );
 
+    const { productVariants, ...others } = product;
+
     return {
       id: orderProduct.id,
-      product: product,
+      product: others,
       productVariant: productVariant,
       qty: orderProduct.qty,
       productPrice: orderProduct.productPrice,
@@ -225,17 +243,42 @@ export class OrderProductService {
     };
   }
 
-  async mergeBasket(basket: Basket): Promise<BasketDTO> {
-    const orderProducts = basket.orderProducts.map(orderProduct => this.mergeOrderProduct(orderProduct));
+  sortProducts(orderPoroducts: OrderProduct[], products: any[]) {
+    return products.map(product => {
+      const orderProduct = orderPoroducts.find(
+        orderProduct => orderProduct.productId.toString() === product.id.toString(),
+      );
+      const productVariant = product?.productVariants.find(
+        (variant: any) => variant.id.toString() === orderProduct?.productVariantId.toString(),
+      );
+      const { productVariants, ...others } = product;
 
+      return {
+        id: orderProduct!.id,
+        product: others,
+        productVariant: productVariant,
+        qty: orderProduct!.qty,
+        productPrice: orderProduct!.productPrice,
+        inBasket: orderProduct!.inBasket,
+      };
+    });
+  }
+
+  // BasketDTO
+  async mergeBasket(basket: Basket, offset: number, limit: number): Promise<any> {
+    // const orderProducts = basket.orderProducts.map(orderProduct => this.mergeOrderProduct(orderProduct));
+    const ids = basket.orderProducts.map(orderProduct => orderProduct.productId);
+    const productsByIds = ids.length !== 0 ? await this.getProducts({ ids, offset, limit }) : { rows: [] };
+    const orderProductsByIds = this.sortProducts(basket.orderProducts, productsByIds.rows);
     return {
       id: basket.id,
       userId: basket.userId ?? null,
-      orderProducts: await Promise.all(orderProducts),
+      // orderProducts: await Promise.all(orderProducts),
       checkout: basket.checkout,
       totalAmount: this.getTotalAmount(basket.orderProducts),
       createdAt: basket.createdAt,
       updatedAt: basket.updatedAt,
+      orderProducts: orderProductsByIds,
     };
   }
 
@@ -243,10 +286,6 @@ export class OrderProductService {
   async getProduct(id: string): Promise<ProductDTO> {
     const product = await this.productRepository
       .createQueryBuilder('product')
-      .leftJoinAndSelect('product.category', 'category')
-      .leftJoinAndSelect('product.tags', 'tag')
-      .leftJoinAndSelect('category.parameters', 'parameter')
-      .leftJoinAndSelect('product.parameterProducts', 'parameterProducts')
       .leftJoinAndSelect('product.productVariants', 'productVariant')
       .leftJoinAndSelect('productVariant.color', 'color')
       .where('product.id = :id', { id: id })
@@ -258,6 +297,33 @@ export class OrderProductService {
 
     return this.mergeProduct(product);
   }
+
+  // FETCH PRODUCTS BY IDS 👇
+
+  async getProducts(queryParams: ProductQueryDTO): Promise<PaginationDTO<ProductDTO>> {
+    const { ids, sortBy = 'name', orderBy = 'DESC', offset = 0, limit = 10 } = queryParams;
+    const queryBuilder = await this.productRepository
+      .createQueryBuilder('product')
+      .leftJoinAndSelect('product.productVariants', 'productVariant')
+      .leftJoinAndSelect('productVariant.color', 'color');
+
+    if (ids) {
+      queryBuilder.andWhere('product.id IN (:...ids)', { ids });
+    }
+
+    queryBuilder.orderBy(`product.${sortBy}`, orderBy).skip(offset).take(limit);
+    //
+    const products = await queryBuilder.getMany();
+
+    const results = products.map(async product => await this.mergeProduct(product));
+
+    return {
+      rows: await Promise.all(results),
+      length: await queryBuilder.getCount(),
+    };
+  }
+
+  // ---------------------------------------------
 
   async mergeProduct(product: Product): Promise<any> {
     const rawReviews = await this.getReviews({

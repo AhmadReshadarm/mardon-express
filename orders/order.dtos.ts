@@ -44,7 +44,8 @@ export interface OrderProductDTO {
 
 export interface OrderProductResponse {
   id: string;
-  product: Product | undefined;
+  // product: Product | undefined;
+  product: any;
   inBasket: Basket;
   qty: number;
   productPrice: number;
@@ -219,4 +220,12 @@ export interface userDTO {
   readonly image: string;
   readonly createdAt?: Date;
   readonly updatedAt?: Date;
+}
+
+export interface ProductQueryDTO {
+  readonly ids?: string[];
+  readonly sortBy?: string;
+  readonly orderBy?: 'DESC' | 'ASC';
+  readonly offset?: number;
+  readonly limit?: number;
 }
