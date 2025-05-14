@@ -25,9 +25,8 @@ export class BasketController {
   @Get(':id')
   async getBasket(req: Request, resp: Response) {
     const { id } = req.params;
-    const { offset, limit } = req.query;
     try {
-      const basket = await this.basketService.getBasket(id, Number(offset), Number(limit));
+      const basket = await this.basketService.getBasket(id);
 
       resp.json(basket);
     } catch (error) {

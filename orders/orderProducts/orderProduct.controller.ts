@@ -35,9 +35,8 @@ export class OrderProductController {
   @Post(':id')
   async createOrder(req: Request, resp: Response) {
     const { id } = req.params;
-    const { offset, limit } = req.body;
     try {
-      const orderProducts = await this.orderProductService.createOrderProduct(id, req.body, offset, limit);
+      const orderProducts = await this.orderProductService.createOrderProduct(id, req.body);
       resp.status(HttpStatus.OK).json(orderProducts);
     } catch (error) {
       resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);

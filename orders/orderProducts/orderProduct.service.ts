@@ -135,12 +135,7 @@ export class OrderProductService {
     return lastElement[0] ? String(+lastElement[0].id + 1) : String(1);
   }
 
-  async createOrderProduct(
-    id: string,
-    newOrderProduct: OrderProduct,
-    offset: number,
-    limit: number,
-  ): Promise<BasketDTO> {
+  async createOrderProduct(id: string, newOrderProduct: OrderProduct): Promise<BasketDTO> {
     const basket = await this.basketRepository.findOneOrFail({
       where: {
         id: Equal(id),
@@ -158,7 +153,7 @@ export class OrderProductService {
 
     await this.orderProductRepository.save(newOrderProduct);
 
-    return await this.getBasket(id, offset, limit);
+    return await this.getBasket(id);
   }
 
   async updateOrderProductQtyInCart(
@@ -172,7 +167,7 @@ export class OrderProductService {
       qty: orderDTO.qty,
     });
 
-    return await this.getBasket(basketId, offset, limit);
+    return await this.getBasket(basketId);
   }
 
   async removeOrderProductFromCart(
@@ -183,10 +178,10 @@ export class OrderProductService {
   ): Promise<BasketDTO> {
     await this.orderProductRepository.remove(orderProductToRemove);
 
-    return await this.getBasket(basketId, offset, limit);
+    return await this.getBasket(basketId);
   }
 
-  async getBasket(id: string, offset: number, limit: number): Promise<BasketDTO> {
+  async getBasket(id: string): Promise<BasketDTO> {
     const queryBuilder = await this.basketRepository
       .createQueryBuilder('basket')
       .leftJoinAndSelect('basket.orderProducts', 'orderProduct')
@@ -198,7 +193,7 @@ export class OrderProductService {
       throw new CustomExternalError([ErrorCode.ENTITY_NOT_FOUND], HttpStatus.NOT_FOUND);
     }
 
-    return this.mergeBasket(queryBuilder, offset, limit);
+    return this.mergeBasket(queryBuilder);
   }
 
   async removeOrderProduct(id: string) {
@@ -244,14 +239,12 @@ export class OrderProductService {
   }
 
   sortProducts(orderPoroducts: OrderProduct[], products: any[]) {
-    return products.map(product => {
-      const orderProduct = orderPoroducts.find(
-        orderProduct => orderProduct.productId.toString() === product.id.toString(),
-      );
+    return orderPoroducts.map(orderProduct => {
+      const product = products.find(product => product.id.toString() === orderProduct.productId.toString());
       const productVariant = product?.productVariants.find(
         (variant: any) => variant.id.toString() === orderProduct?.productVariantId.toString(),
       );
-      const { productVariants, ...others } = product;
+      const { productVariants, keywords, desc, shortDesc, createdAt, updatedAt, ...others } = product;
 
       return {
         id: orderProduct!.id,
@@ -265,10 +258,10 @@ export class OrderProductService {
   }
 
   // BasketDTO
-  async mergeBasket(basket: Basket, offset: number, limit: number): Promise<any> {
+  async mergeBasket(basket: Basket): Promise<BasketDTO> {
     // const orderProducts = basket.orderProducts.map(orderProduct => this.mergeOrderProduct(orderProduct));
     const ids = basket.orderProducts.map(orderProduct => orderProduct.productId);
-    const productsByIds = ids.length !== 0 ? await this.getProducts({ ids, offset, limit }) : { rows: [] };
+    const productsByIds = ids.length !== 0 ? await this.getProducts({ ids }) : { rows: [] };
     const orderProductsByIds = this.sortProducts(basket.orderProducts, productsByIds.rows);
     return {
       id: basket.id,
@@ -301,7 +294,7 @@ export class OrderProductService {
   // FETCH PRODUCTS BY IDS 👇
 
   async getProducts(queryParams: ProductQueryDTO): Promise<PaginationDTO<ProductDTO>> {
-    const { ids, sortBy = 'name', orderBy = 'DESC', offset = 0, limit = 10 } = queryParams;
+    const { ids, sortBy = 'name', orderBy = 'DESC', offset = 0, limit = 10000 } = queryParams;
     const queryBuilder = await this.productRepository
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.productVariants', 'productVariant')
@@ -312,7 +305,6 @@ export class OrderProductService {
     }
 
     queryBuilder.orderBy(`product.${sortBy}`, orderBy).skip(offset).take(limit);
-    //
     const products = await queryBuilder.getMany();
 
     const results = products.map(async product => await this.mergeProduct(product));

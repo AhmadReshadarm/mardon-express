@@ -58,7 +58,8 @@ export class BasketService {
     queryBuilder.orderBy(`basket.${sortBy}`, orderBy).skip(offset).take(limit);
 
     const baskets = await queryBuilder.getMany();
-    const result = baskets.map(async basket => await this.mergeBasket(basket));
+    // const result = baskets.map(async basket => await this.mergeBasket(basket));
+    const result = baskets.map(async basket => await this.orderProductService.mergeBasket(basket));
 
     return {
       rows: await Promise.all(result),
@@ -66,7 +67,7 @@ export class BasketService {
     };
   }
 
-  async getBasket(id: string, offset: number, limit: number): Promise<BasketDTO> {
+  async getBasket(id: string): Promise<BasketDTO> {
     const queryBuilder = await this.basketRepository
       .createQueryBuilder('basket')
       .leftJoinAndSelect('basket.orderProducts', 'orderProduct')
@@ -79,7 +80,7 @@ export class BasketService {
     }
 
     // return this.mergeBasket(queryBuilder);
-    return this.orderProductService.mergeBasket(queryBuilder, offset, limit);
+    return this.orderProductService.mergeBasket(queryBuilder);
   }
 
   async getUserById(id: string, authToken: string): Promise<UserDTO | undefined> {
