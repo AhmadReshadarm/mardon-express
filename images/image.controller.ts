@@ -11,7 +11,6 @@ import { HttpStatus } from '../core/lib/http-status';
 import fs from 'fs';
 import axios from 'axios';
 import sharp from 'sharp';
-import zlib from 'zlib';
 
 @singleton()
 @Controller('/images')
