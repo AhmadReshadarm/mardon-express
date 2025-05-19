@@ -46,42 +46,95 @@ export class ImageController {
     }
   }
 
+  // @Post()
+  // @Middleware([verifyToken, isUser, createDestination, multer.array('files')])
+  // async uploadImages(req: Request, resp: Response) {
+  //   const files: ImageDto[] = (req as any).files ?? [];
+  //   const imagesCoverted: ImageDto[] = [];
+  //   function sleep(ms: number) {
+  //     return new Promise(resolve => setTimeout(resolve, ms));
+  //   }
+  //   try {
+  //     files.map(async image => {
+  //       const sections = image.filename.split('.');
+  //       const filename = sections[0];
+  //       const path = `./files/${filename}.webp`;
+  //       sharp(image.path)
+  //         .webp({ lossless: false })
+  //         .toFile(path, error => {
+  //           if (error) {
+  //             console.log(error);
+  //           }
+  //           imagesCoverted.push({
+  //             filename: `${filename}.webp`,
+  //             originalname: image.originalname,
+  //             mimetype: image.mimetype,
+  //             size: image.size,
+  //           });
+  //         });
+  //     });
+
+  //     await sleep(1000);
+  //     files.map(image => {
+  //       fs.unlinkSync(`${DESTINATION}/${image.filename}`);
+  //     });
+  //     await this.imageService.uploadImages(imagesCoverted);
+  //     resp.json(imagesCoverted.map(image => image.filename));
+  //   } catch (error) {
+  //     resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
+  //   }
+  // }
+
   @Post()
   @Middleware([verifyToken, isUser, createDestination, multer.array('files')])
   async uploadImages(req: Request, resp: Response) {
     const files: ImageDto[] = (req as any).files ?? [];
-    const imagesCoverted: ImageDto[] = [];
-    function sleep(ms: number) {
-      return new Promise(resolve => setTimeout(resolve, ms));
-    }
-    try {
-      files.map(async image => {
-        const sections = image.filename.split('.');
-        const filename = sections[0];
-        const path = `./files/${filename}.webp`;
-        sharp(image.path)
-          .webp({ lossless: false })
-          .toFile(path, error => {
-            if (error) {
-              console.log(error);
-            }
-            imagesCoverted.push({
-              filename: `${filename}.webp`,
-              originalname: image.originalname,
-              mimetype: image.mimetype,
-              size: image.size,
-            });
-          });
-      });
+    const imagesConverted: ImageDto[] = [];
+    const conversionPromises: Promise<void>[] = [];
 
-      await sleep(1000);
-      files.map(image => {
-        fs.unlinkSync(`${DESTINATION}/${image.filename}`);
-      });
-      await this.imageService.uploadImages(imagesCoverted);
-      resp.json(imagesCoverted.map(image => image.filename));
+    try {
+      for (const image of files) {
+        const sections = image.filename.split('.');
+        const baseFilename = sections[0];
+        const webpPath = `./files/${baseFilename}.webp`; // Path for the converted WebP image
+
+        const conversionPromise = sharp(image.path)
+          .webp({ lossless: false })
+          .toFile(webpPath)
+          .then(() => {
+            imagesConverted.push({
+              filename: `${baseFilename}.webp`, // Store the WebP filename
+              originalname: image.originalname,
+              mimetype: 'image/webp', // Update mimetype
+              size: fs.statSync(webpPath).size, // Get the size of the converted file
+            });
+            // Optionally, you can delete the original file here if you don't need it
+            fs.unlinkSync(image.path!);
+          })
+          .catch(error => {
+            console.error(`Error converting ${image.originalname}:`, error);
+            // If one conversion fails, you might want to handle it (e.g., remove from processing)
+            // For this example, we'll let the Promise.all reject if any fail.
+            throw error; // Re-throw the error to reject the promise
+          });
+
+        conversionPromises.push(conversionPromise);
+      }
+
+      await Promise.all(conversionPromises); // Wait for all conversions (and optional deletions) to complete successfully
+      await this.imageService.uploadImages(imagesConverted);
+      resp.json(imagesConverted.map(img => img.filename)); // Respond with the WebP filenames
     } catch (error) {
+      console.error('Image upload process failed:', error);
       resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
+    } finally {
+      // Optional: Clean up any remaining original files if an error occurred
+      // This might be necessary depending on your error handling strategy.
+      for (const image of files) {
+        if (fs.existsSync(image.path!)) {
+          fs.unlinkSync(image.path!);
+        }
+      }
     }
   }
 
