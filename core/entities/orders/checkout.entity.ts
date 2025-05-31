@@ -43,6 +43,9 @@ export class Checkout {
   @Column({ default: false })
   leaveNearDoor: boolean;
 
+  @Column({ default: false })
+  paidFor: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 
@@ -60,6 +63,7 @@ export class Checkout {
     basket: Basket;
     comment: string;
     leaveNearDoor: boolean;
+    paidFor: boolean;
     status: CheckoutStatus;
   }) {
     if (args) {
@@ -70,6 +74,7 @@ export class Checkout {
       this.basket = args.basket;
       this.comment = args.comment;
       this.leaveNearDoor = args.leaveNearDoor;
+      this.paidFor = args.paidFor;
       this.status = args.status;
     }
   }

@@ -178,6 +178,7 @@ export class CheckoutService {
       .update()
       .set({
         status: checkoutDTO.status,
+        paidFor: checkoutDTO.paidFor,
       })
       .where('id = :id', { id: id })
       .execute();

@@ -237,6 +237,9 @@ export class CheckoutController {
       resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
     }
     try {
+      if (!req.body.sendMail) {
+        return;
+      }
       const Constants = ['Новый заказ', 'В пути', 'Завершен', 'Отменено'];
       const payload = {
         status: Constants[updated.status],

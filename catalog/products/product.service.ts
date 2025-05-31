@@ -53,33 +53,59 @@ export class ProductService {
       .leftJoinAndSelect('product.productVariants', 'productVariant')
       .leftJoinAndSelect('productVariant.color', 'color');
 
+    // if (name) {
+    //   const keywords = name.toLowerCase().split(/\s+/);
+
+    //   let query = queryBuilder;
+
+    //   keywords.forEach((keyword, index) => {
+    //     if (index === 0) {
+    //       query = query.where(
+    //         `LOWER(product.name) LIKE :keyword
+    //     OR LOWER(productVariant.artical) LIKE :keyword
+    //     OR LOWER(product.keywords) LIKE :keyword`,
+    //         { keyword: `%${keyword}%` },
+    //       );
+    //     } else {
+    //       query = query.orWhere(
+    //         `LOWER(product.name) LIKE :keyword
+    //     OR LOWER(productVariant.artical) LIKE :keyword
+    //     OR LOWER(product.keywords) LIKE :keyword`,
+    //         { keyword: `%${keyword}%` },
+    //       );
+    //     }
+    //   });
+    // }
+
     if (name) {
-      const keywords = name.toLowerCase().split(/\s+/);
+      const trimmedName = name.trim();
 
-      let query = queryBuilder;
+      if (trimmedName) {
+        const keywords = trimmedName.split(/\s+/).filter(k => k.length > 0);
 
-      keywords.forEach((keyword, index) => {
-        if (index === 0) {
-          query = query.where(
-            `LOWER(product.name) LIKE :keyword 
-        OR LOWER(productVariant.artical) LIKE :keyword 
-        OR LOWER(product.keywords) LIKE :keyword`,
-            { keyword: `%${keyword}%` },
+        if (keywords.length === 1) {
+          // Single keyword search
+          const keyword = keywords[0];
+          queryBuilder.andWhere(
+            `(LOWER(product.name) LIKE :keyword 
+             OR LOWER(productVariant.artical) LIKE :keyword 
+             OR LOWER(product.keywords) LIKE :keyword)`,
+            { keyword: `%${keyword.toLowerCase()}%` },
           );
         } else {
-          query = query.orWhere(
-            `LOWER(product.name) LIKE :keyword 
-        OR LOWER(productVariant.artical) LIKE :keyword 
-        OR LOWER(product.keywords) LIKE :keyword`,
-            { keyword: `%${keyword}%` },
-          );
+          // Multi-keyword search - all must match
+          keywords.forEach((keyword, index) => {
+            const paramName = `nameKeyword${index}`;
+            queryBuilder.andWhere(
+              `(LOWER(product.name) LIKE :${paramName} 
+               OR LOWER(productVariant.artical) LIKE :${paramName} 
+               OR LOWER(product.keywords) LIKE :${paramName})`,
+              { [paramName]: `%${keyword.toLowerCase()}%` },
+            );
+          });
         }
-      });
+      }
     }
-
-    // if (userHistory) {
-    //   queryBuilder.andWhere('product.id IN (:...ids)', { ids: userHistory });
-    // }
 
     if (minPrice) {
       queryBuilder.andWhere('productVariant.price >= :minPrice', { minPrice: minPrice });
