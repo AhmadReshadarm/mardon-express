@@ -246,6 +246,7 @@ export class CheckoutService {
       address: checkout.address,
       comment: checkout.comment,
       status: checkout.status,
+      paidFor: checkout.paidFor,
     };
   }
 

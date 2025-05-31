@@ -129,6 +129,7 @@ export interface CheckoutDTO {
   createdAt: Date;
   updatedAt: Date;
   status?: CheckoutStatus;
+  paidFor: boolean;
 }
 
 export interface CheckoutQueryDTO {
