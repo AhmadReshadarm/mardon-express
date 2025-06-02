@@ -1,5 +1,5 @@
 import { Basket, OrderProduct } from 'core/entities';
-import { PaymentMethod } from 'core/enums/payment-method.enum';
+import { PaymentMethod } from '../../core/enums/payment-method.enum';
 import { BasketDTO } from 'orders/order.dtos';
 
 interface templetDTO {
