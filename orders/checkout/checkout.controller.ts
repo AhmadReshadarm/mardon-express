@@ -60,6 +60,8 @@ export class CheckoutController {
       ...req.body,
     };
     checkoutPayload.basket = req.body.basket.id;
+    checkoutPayload.paidFor = false;
+
     const newCheckout = new Checkout(checkoutPayload);
     const { user } = resp.locals;
     if (user.role !== Role.Admin) {
@@ -104,7 +106,7 @@ export class CheckoutController {
         }
       }
 
-      const invoiceData: string = generateInvoiceTemplet(payload, cidImageMap);
+      const invoiceData: string = generateInvoiceTemplet(payload, cidImageMap, req.body.paymentMethod);
 
       const emailAdminPayload = {
         to: `info@nbhoz.ru`,

@@ -14,7 +14,8 @@ import {
   Tag,
 } from '../core/entities';
 import { Role } from '../core/enums/roles.enum';
-import { RatingDTO } from 'core/lib/dto';
+import { RatingDTO } from '../core/lib/dto';
+import { PaymentMethod } from '../core/enums/payment-method.enum';
 
 export interface UserDTO {
   id: string;
@@ -129,6 +130,7 @@ export interface CheckoutDTO {
   createdAt: Date;
   updatedAt: Date;
   status?: CheckoutStatus;
+  paymentMethod: PaymentMethod;
   paidFor: boolean;
 }
 

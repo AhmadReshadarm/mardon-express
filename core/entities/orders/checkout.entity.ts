@@ -12,6 +12,7 @@ import { Address } from './address.entity';
 import { Basket } from './basket.entity';
 import { IsNotEmpty } from 'class-validator';
 import { CheckoutStatus } from '../../../core/enums/checkout-status.enum';
+import { PaymentMethod } from '../../../core/enums/payment-method.enum';
 
 @Entity()
 export class Checkout {
@@ -55,6 +56,9 @@ export class Checkout {
   @Column({ type: 'enum', enum: CheckoutStatus, default: CheckoutStatus.New })
   status: CheckoutStatus;
 
+  @Column({ type: 'enum', enum: PaymentMethod, default: PaymentMethod.Cash })
+  paymentMethod: PaymentMethod;
+
   constructor(args?: {
     // paymentId: string;
     userId: string;
@@ -65,6 +69,7 @@ export class Checkout {
     leaveNearDoor: boolean;
     paidFor: boolean;
     status: CheckoutStatus;
+    paymentMethod: PaymentMethod;
   }) {
     if (args) {
       // this.paymentId = args.paymentId;
@@ -76,6 +81,7 @@ export class Checkout {
       this.leaveNearDoor = args.leaveNearDoor;
       this.paidFor = args.paidFor;
       this.status = args.status;
+      this.paymentMethod = args.paymentMethod;
     }
   }
 }
