@@ -403,7 +403,7 @@ export class ProductController {
           'price': product.productVariants[0].price,
           'currencyId': 'RUB',
           'categoryId': product.category.id,
-          'name': product.name,
+          'name': product.name.slice(0, 100),
           'description': product?.desc?.includes('|') ? product.desc.split('|')[1] : product.desc,
           'picture': `https://nbhoz.ru/api/images/${product?.productVariants![0]?.images?.split(', ')[0]}`,
           'url': `https://nbhoz.ru/product/${product.url}`,

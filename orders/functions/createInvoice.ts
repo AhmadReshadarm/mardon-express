@@ -164,7 +164,7 @@ const generateUpdateInoviceTemplet = (payload: any) => {
 // };
 
 const generateInvoiceTemplet = (payload: templetDTO, cidImageMap: Record<string, string>, paymentOption: number) => {
-  const paymentMethod = ['Наличные +0%', 'Без наличных +5%', 'Расчётный счёт +12%'];
+  const paymentMethod = ['Наличные +0%', 'По безналичному расчету +5%', 'Расчётный счёт +12%'];
   return `
     <!DOCTYPE html>
     <html lang="ru">

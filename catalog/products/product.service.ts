@@ -53,30 +53,6 @@ export class ProductService {
       .leftJoinAndSelect('product.productVariants', 'productVariant')
       .leftJoinAndSelect('productVariant.color', 'color');
 
-    // if (name) {
-    //   const keywords = name.toLowerCase().split(/\s+/);
-
-    //   let query = queryBuilder;
-
-    //   keywords.forEach((keyword, index) => {
-    //     if (index === 0) {
-    //       query = query.where(
-    //         `LOWER(product.name) LIKE :keyword
-    //     OR LOWER(productVariant.artical) LIKE :keyword
-    //     OR LOWER(product.keywords) LIKE :keyword`,
-    //         { keyword: `%${keyword}%` },
-    //       );
-    //     } else {
-    //       query = query.orWhere(
-    //         `LOWER(product.name) LIKE :keyword
-    //     OR LOWER(productVariant.artical) LIKE :keyword
-    //     OR LOWER(product.keywords) LIKE :keyword`,
-    //         { keyword: `%${keyword}%` },
-    //       );
-    //     }
-    //   });
-    // }
-
     if (name) {
       const trimmedName = name.trim();
 
@@ -226,12 +202,6 @@ export class ProductService {
     return this.mergeProduct(product);
   }
 
-  // async createParameters(parameters: ParameterProducts[], id: string) {
-  //   parameters.map(async parameter => {
-  //     parameter.productId = id;
-  //     return await this.parameterProductsRepository.save(parameter);
-  //   });
-  // }
   createParameters = async (parameters: ParameterProducts[], id: string, counter: number) => {
     if (parameters.length > counter) {
       parameters[counter].productId = id;
