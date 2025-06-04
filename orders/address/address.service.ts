@@ -141,11 +141,11 @@ export class AddressService {
       receiverName: address.receiverName,
       receiverPhone: address.receiverPhone,
       address: address.address,
-      roomOrOffice: address.roomOrOffice,
-      door: address.door,
-      floor: address.floor,
-      rignBell: address.rignBell,
-      zipCode: address.zipCode,
+      // roomOrOffice: address.roomOrOffice,
+      // door: address.door,
+      // floor: address.floor,
+      // rignBell: address.rignBell,
+      // zipCode: address.zipCode,
       checkouts: address.checkouts,
     };
   }

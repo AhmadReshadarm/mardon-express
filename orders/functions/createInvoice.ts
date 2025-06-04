@@ -16,14 +16,6 @@ interface templetDTO {
   cart: Basket | null;
 }
 
-// const getTotalPrice = (cart: any) => {
-//   const totalAmount = cart?.orderProducts?.reduce((accum: any, item: any) => {
-//     return accum + Number(item.qty) * Number(item.productVariant?.price);
-//   }, 0)!;
-
-//   return totalAmount;
-// };
-
 const getTotalPrice = (cart: BasketDTO | any, selectedMethod: number) => {
   const totalAmount = cart?.orderProducts?.reduce((accum: any, item: any) => {
     return accum + Number(item.qty) * Number(item.productVariant?.price);
@@ -172,6 +164,7 @@ const generateUpdateInoviceTemplet = (payload: any) => {
 // };
 
 const generateInvoiceTemplet = (payload: templetDTO, cidImageMap: Record<string, string>, paymentOption: number) => {
+  const paymentMethod = ['Наличные +0%', 'Без наличных +5%', 'Расчётный счёт +12%'];
   return `
     <!DOCTYPE html>
     <html lang="ru">
@@ -182,18 +175,18 @@ const generateInvoiceTemplet = (payload: templetDTO, cidImageMap: Record<string,
     </head>
     <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
       <!-- Main container -->
-      <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f5f5f5">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#eee8dc">
         <tr>
           <td align="center" style="padding: 30px 0;">
             <!-- Content container -->
             <table width="100%" max-width="600" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff" style="border-collapse: collapse; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
               <!-- Header -->
-              <tr>
+              <tr style="background-color:#eee8dc; height:100px;">
                 <td align="center" style="padding: 20px; border-bottom: 1px solid #eeeeee;">
                   <table width="100%" cellpadding="0" cellspacing="0" border="0">
                     <tr>
-                      <td width="50%" align="left" style="font-size: 24px; font-weight: bold; color: #2c3e50;">NBHOZ</td>
-                      <td width="50%" align="right" style="font-size: 20px; color: #3498db;">Счет-фактура</td>
+                      <td width="50%" align="left" style="font-size: 24px; font-weight: bold; color: #000000;">NBHOZ</td>
+                      <td width="50%" align="right" style="font-size: 20px; color: #000000;">Счет-фактура</td>
                     </tr>
                   </table>
                 </td>
@@ -204,7 +197,7 @@ const generateInvoiceTemplet = (payload: templetDTO, cidImageMap: Record<string,
                 <td style="padding: 20px;">
                   <table width="100%" cellpadding="0" cellspacing="0" border="0">
                     <tr>
-                      <td colspan="2" style="font-size: 18px; font-weight: bold; padding-bottom: 10px; border-bottom: 2px solid #3498db; margin-bottom: 15px;">
+                      <td colspan="2" style="font-size: 18px; font-weight: bold; padding-bottom: 10px; border-bottom: 2px solid #0000004a; margin-bottom: 15px;">
                         Данные получателя
                       </td>
                     </tr>
@@ -229,7 +222,7 @@ const generateInvoiceTemplet = (payload: templetDTO, cidImageMap: Record<string,
                 <td style="padding: 0 20px 20px 20px;">
                   <table width="100%" cellpadding="0" cellspacing="0" border="0">
                     <tr>
-                      <td colspan="2" style="font-size: 18px; font-weight: bold; padding-bottom: 10px; border-bottom: 2px solid #3498db; margin-bottom: 15px;">
+                      <td colspan="2" style="font-size: 18px; font-weight: bold; padding-bottom: 10px; border-bottom: 2px solid #0000004a; margin-bottom: 15px;">
                         Адрес доставки
                       </td>
                     </tr>
@@ -246,7 +239,7 @@ const generateInvoiceTemplet = (payload: templetDTO, cidImageMap: Record<string,
                 <td style="padding: 0 20px;">
                   <table width="100%" cellpadding="0" cellspacing="0" border="0">
                     <tr>
-                      <td style="font-size: 18px; font-weight: bold; padding-bottom: 10px; border-bottom: 2px solid #3498db;">
+                      <td style="font-size: 18px; font-weight: bold; padding-bottom: 10px; border-bottom: 2px solid #0000004a;">
                         Детали заказа
                       </td>
                     </tr>
@@ -261,15 +254,15 @@ const generateInvoiceTemplet = (payload: templetDTO, cidImageMap: Record<string,
 
                   return `
                   <tr>
-                    <td style="padding: 20px;">
-                      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <td style="padding: 10px;">
+                      <table style="padding: 10px; border: 1px solid #0000004a; border-radius: 15px;" width="100%" cellpadding="0" cellspacing="0" border="0">
                         <tr>
                           <td width="120" valign="top" style="padding-right: 15px;">
                             <a href="https://nbhoz.ru/product/${orderproduct.product?.url}">
                               <img 
                                 src="cid:${productImageCid}" 
                                 alt="${orderproduct.product?.name}" 
-                                style="display: block; width: 120px; height: 120px; border: 1px solid #eeeeee; border-radius: 10px;"
+                                style="display: block; width: 120px; height: 120px; border: 1px solid #00000014; border-radius: 10px;"
                               />
                             </a>
                           </td>
@@ -279,7 +272,7 @@ const generateInvoiceTemplet = (payload: templetDTO, cidImageMap: Record<string,
                                 <td style="padding-bottom: 5px;">
                                   <a href="https://nbhoz.ru/product/${
                                     orderproduct.product?.url
-                                  }" style="color: #2c3e50; text-decoration: none; font-weight: bold; font-size: 16px;">
+                                  }" style="color: #000000; text-decoration: none; font-weight: bold; font-size: 16px;">
                                     ${orderproduct.product?.name?.split('(')[0]} 
                                     ${
                                       orderproduct?.productVariant?.artical?.includes('|')
@@ -291,7 +284,7 @@ const generateInvoiceTemplet = (payload: templetDTO, cidImageMap: Record<string,
                               </tr>
                               <tr>
                                 <td style="font-size: 14px; color: #7f8c8d; padding-bottom: 10px;">
-                                  Артикул: ${orderproduct.productVariant?.artical?.toLowerCase()}
+                                  Артикул: ${orderproduct.productVariant?.artical?.toUpperCase()}
                                 </td>
                               </tr>
                               <tr>
@@ -337,7 +330,9 @@ const generateInvoiceTemplet = (payload: templetDTO, cidImageMap: Record<string,
                     </tr>
                     <tr>
                       <td align="right" style="padding: 5px 0; color: #7f8c8d;">Способ оплаты:</td>
-                      <td align="right" style="padding: 5px 0; font-weight: bold;">${paymentOption}</td>
+                      <td align="right" style="padding: 5px 0; font-weight: bold; white-space: nowrap; padding-left:10px;">${
+                        paymentMethod[paymentOption]
+                      }</td>
                     </tr>
                   </table>
                 </td>
@@ -369,7 +364,7 @@ const generateInvoiceTemplet = (payload: templetDTO, cidImageMap: Record<string,
               
               <!-- Footer -->
               <tr>
-                <td style="padding: 20px; background-color: #2c3e50; color: #ffffff;">
+                <td style="padding: 20px; background-color: #eee8dc; color: #000000;">
                   <table width="100%" cellpadding="0" cellspacing="0" border="0">
                     <tr>
                       <td align="center" style="padding: 10px 0; font-size: 14px;">

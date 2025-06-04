@@ -94,11 +94,11 @@ export interface AddressDTO {
   receiverName: string;
   receiverPhone: string;
   address: string;
-  roomOrOffice?: string;
-  door?: string;
-  floor?: string;
-  rignBell?: string;
-  zipCode?: string;
+  // roomOrOffice?: string;
+  // door?: string;
+  // floor?: string;
+  // rignBell?: string;
+  // zipCode?: string;
   checkouts: Checkout[];
 }
 

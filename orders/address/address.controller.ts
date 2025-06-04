@@ -38,7 +38,10 @@ export class AddressController {
   @Middleware([verifyToken, isUser])
   async createAddress(req: Request, resp: Response) {
     const newAddress = new Address(req.body);
-    newAddress.userId = resp.locals.user.id;
+    const { user } = resp.locals;
+    if (user.role !== Role.Admin) {
+      newAddress.userId = resp.locals.user.id;
+    }
 
     await validation(newAddress);
     const created = await this.addressService.createAddress(newAddress);

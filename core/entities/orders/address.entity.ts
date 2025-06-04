@@ -22,21 +22,21 @@ export class Address {
   @Column()
   address: string;
 
-  @Column({ nullable: true })
-  roomOrOffice: string;
+  // @Column({ nullable: true })
+  // roomOrOffice: string;
 
-  @Column({ nullable: true })
-  door: string;
+  // @Column({ nullable: true })
+  // door: string;
 
-  @Column({ nullable: true })
-  floor: string;
+  // @Column({ nullable: true })
+  // floor: string;
 
-  @Column({ nullable: true })
-  rignBell: string;
+  // @Column({ nullable: true })
+  // rignBell: string;
 
-  // @IsNotEmpty()
-  @Column({ nullable: true })
-  zipCode: string;
+  // // @IsNotEmpty()
+  // @Column({ nullable: true })
+  // zipCode: string;
 
   @OneToMany(() => Checkout, checkout => checkout.address)
   checkouts: Checkout[];
@@ -46,22 +46,22 @@ export class Address {
     receiverName: string;
     receiverPhone: string;
     address: string;
-    roomOrOffice: string;
-    door: string;
-    floor: string;
-    rignBell: string;
-    zipCode: string;
+    // roomOrOffice: string;
+    // door: string;
+    // floor: string;
+    // rignBell: string;
+    // zipCode: string;
   }) {
     if (args) {
       this.userId = args.userId;
       this.receiverName = args.receiverName;
       this.receiverPhone = args.receiverPhone;
       this.address = args.address;
-      this.roomOrOffice = args.roomOrOffice;
-      this.door = args.door;
-      this.floor = args.floor;
-      this.rignBell = args.rignBell;
-      this.zipCode = args.zipCode;
+      // this.roomOrOffice = args.roomOrOffice;
+      // this.door = args.door;
+      // this.floor = args.floor;
+      // this.rignBell = args.rignBell;
+      // this.zipCode = args.zipCode;
     }
   }
 }
