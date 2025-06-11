@@ -16,19 +16,22 @@ interface templetDTO {
   cart: Basket | null;
 }
 
+const roundUpto = function (number: number, upto: number) {
+  return Number(number.toFixed(upto));
+};
+
 const getTotalPrice = (cart: BasketDTO | any, selectedMethod: number) => {
   const totalAmount = cart?.orderProducts?.reduce((accum: any, item: any) => {
     return accum + Number(item.qty) * Number(item.productVariant?.price);
   }, 0)!;
 
-  // return totalAmount;
   switch (selectedMethod) {
     case PaymentMethod.Cash:
       return totalAmount;
     case PaymentMethod.NoCash:
-      return totalAmount + (totalAmount * 5) / 100;
+      return roundUpto(totalAmount + (totalAmount * 5) / 100, 2);
     case PaymentMethod.BankTransfer:
-      return totalAmount + (totalAmount * 12) / 100;
+      return roundUpto(totalAmount + (totalAmount * 12) / 100, 2);
     default:
       return totalAmount;
   }
@@ -39,9 +42,9 @@ const calculateIndvidualProductTotal = (selectedMethod: number, productPrice: nu
     case PaymentMethod.Cash:
       return productPrice * qty;
     case PaymentMethod.NoCash:
-      return (productPrice + (productPrice * 5) / 100) * qty;
+      return roundUpto((productPrice + (productPrice * 5) / 100) * qty, 2);
     case PaymentMethod.BankTransfer:
-      return (productPrice + (productPrice * 12) / 100) * qty;
+      return roundUpto((productPrice + (productPrice * 12) / 100) * qty, 2);
     default:
       return productPrice * qty;
   }
@@ -52,9 +55,9 @@ const calculateIndvidualPercent = (selectedMethod: number, productPrice: number)
     case PaymentMethod.Cash:
       return productPrice;
     case PaymentMethod.NoCash:
-      return (productPrice * 5) / 100 + productPrice;
+      return roundUpto((productPrice * 5) / 100 + productPrice, 2);
     case PaymentMethod.BankTransfer:
-      return (productPrice * 12) / 100 + productPrice;
+      return roundUpto((productPrice * 12) / 100 + productPrice, 2);
     default:
       return productPrice;
   }

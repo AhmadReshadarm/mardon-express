@@ -18,12 +18,9 @@ import { PaymentMethod } from '../../../core/enums/payment-method.enum';
 export class Checkout {
   @PrimaryGeneratedColumn()
   id: string;
-  // @IsNotEmpty()
-  // @Column()
-  // paymentId: string;
 
   @IsNotEmpty()
-  @Column()
+  @Column('decimal', { precision: 20, scale: 2 })
   totalAmount: number;
 
   @Column()
@@ -60,7 +57,6 @@ export class Checkout {
   paymentMethod: PaymentMethod;
 
   constructor(args?: {
-    // paymentId: string;
     userId: string;
     totalAmount: number;
     address: Address;
@@ -72,7 +68,6 @@ export class Checkout {
     paymentMethod: PaymentMethod;
   }) {
     if (args) {
-      // this.paymentId = args.paymentId;
       this.userId = args.userId;
       this.totalAmount = args.totalAmount;
       this.address = args.address;
