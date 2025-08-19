@@ -203,6 +203,18 @@ export class CheckoutController {
     }
   }
 
+  @Put('update/:id')
+  @Middleware([verifyToken, isAdmin, isUser])
+  async fullUpadateCheckout(req: Request, resp: Response) {
+    const { id } = req.params;
+    try {
+      const updated = await this.checkoutService.updateCheckoutData(id, req.body);
+      resp.status(HttpStatus.OK).json(updated);
+    } catch (error) {
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
+    }
+  }
+
   @Put(':id')
   @Middleware([verifyToken, isUser])
   async updateCheckout(req: Request, resp: Response) {
@@ -228,11 +240,11 @@ export class CheckoutController {
       }
       if (jwt.role !== Role.Admin) {
         req.body.sattus = checkoutsById.status;
-        const userCheckoutUpdated = await this.checkoutService.updateCheckout(id, req.body, resp.locals.user);
+        const userCheckoutUpdated = await this.checkoutService.updateCheckout(id, req.body);
         resp.status(HttpStatus.OK).json(userCheckoutUpdated);
         return;
       }
-      updated = await this.checkoutService.updateCheckout(id, req.body, resp.locals.user);
+      updated = await this.checkoutService.updateCheckout(id, req.body);
 
       resp.status(HttpStatus.OK).json(updated);
     } catch (error) {

@@ -171,7 +171,24 @@ export class CheckoutService {
     return checkout;
   }
 
-  async updateCheckout(id: string, checkoutDTO: Checkout, user: UserAuth): Promise<CheckoutDTO> {
+  async updateCheckoutData(id: string, checkoutDTO: Checkout) {
+    await this.checkoutRepository.save({ ...checkoutDTO });
+    const queryBuilder = await this.checkoutRepository
+      .createQueryBuilder('checkout')
+      .leftJoinAndSelect('checkout.address', 'address')
+      .leftJoinAndSelect('checkout.basket', 'basket')
+      .leftJoinAndSelect('basket.orderProducts', 'orderProduct')
+      .where('checkout.id = :id', { id: id })
+      .getOne();
+
+    if (!queryBuilder) {
+      throw new CustomExternalError([ErrorCode.ENTITY_NOT_FOUND], HttpStatus.NOT_FOUND);
+    }
+
+    return this.mergeCheckout(queryBuilder, '_');
+  }
+
+  async updateCheckout(id: string, checkoutDTO: Checkout): Promise<CheckoutDTO> {
     await this.checkoutRepository
       .createQueryBuilder()
       .update()
