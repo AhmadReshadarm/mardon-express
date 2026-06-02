@@ -21,7 +21,18 @@ export class TagController {
 
       resp.json(tags);
     } catch (error) {
-      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: `somthing went wrong: ${error}` });
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
+    }
+  }
+
+  @Get('tags-only')
+  async getTagsOnly(req: Request, resp: Response) {
+    try {
+      const tags = await this.tagService.getTagsOnly(req.query);
+
+      resp.json(tags);
+    } catch (error) {
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
     }
   }
 

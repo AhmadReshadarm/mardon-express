@@ -42,6 +42,15 @@ export interface TagQueryDTO {
   readonly offset?: number;
 }
 
+export interface TagOnlyQueryDTO {
+  readonly name?: string;
+  readonly url?: string;
+  readonly sortBy?: string;
+  readonly orderBy?: 'DESC' | 'ASC';
+  readonly limit?: number;
+  readonly offset?: number;
+}
+
 export interface ParameterQueryDTO {
   readonly name?: string;
   readonly categories?: string;

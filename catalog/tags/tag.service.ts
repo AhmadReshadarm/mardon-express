@@ -2,7 +2,7 @@ import { singleton } from 'tsyringe';
 import { DataSource, Equal, Repository } from 'typeorm';
 import { Tag } from '../../core/entities';
 import { validation } from '../../core/lib/validator';
-import { TagQueryDTO } from '../catalog.dtos';
+import { TagOnlyQueryDTO, TagQueryDTO } from '../catalog.dtos';
 import { PaginationDTO } from '../../core/lib/dto';
 
 @singleton()
@@ -47,6 +47,26 @@ export class TagService {
     if (children) {
       queryBuilder.andWhere('category.url = :children', { children: `${children}` });
     }
+    queryBuilder.orderBy(`tag.${sortBy}`, orderBy).skip(offset).take(limit);
+
+    return {
+      rows: await queryBuilder.getMany(),
+      length: await queryBuilder.getCount(),
+    };
+  }
+
+  async getTagsOnly(queryParams: TagOnlyQueryDTO): Promise<PaginationDTO<Tag>> {
+    const { name, url, sortBy = 'name', orderBy = 'DESC', offset = 0, limit = 10 } = queryParams;
+
+    const queryBuilder = await this.tagRepository.createQueryBuilder('tag');
+
+    if (name) {
+      queryBuilder.andWhere('tag.name LIKE :name', { name: `%${name}%` });
+    }
+    if (url) {
+      queryBuilder.andWhere('tag.url LIKE :url', { url: `%${url}%` });
+    }
+
     queryBuilder.orderBy(`tag.${sortBy}`, orderBy).skip(offset).take(limit);
 
     return {
