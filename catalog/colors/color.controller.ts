@@ -25,6 +25,17 @@ export class ColorController {
     }
   }
 
+  @Get('only-colors')
+  async getColorsOnly(req: Request, resp: Response) {
+    try {
+      const colors = await this.colorService.getColorsOnly(req.query as any);
+
+      resp.json(colors);
+    } catch (error) {
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
+    }
+  }
+
   @Get(':id')
   async getColor(req: Request, resp: Response) {
     try {
