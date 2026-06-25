@@ -12,7 +12,10 @@ export class CategoryService {
   private categoryTreeRepository: TreeRepository<Category>;
   private parametersRepository: Repository<Parameter>;
 
-  constructor(dataSource: DataSource, private parameterService: ParameterService) {
+  constructor(
+    dataSource: DataSource,
+    private parameterService: ParameterService,
+  ) {
     this.categoryRepository = dataSource.getRepository(Category);
     this.categoryTreeRepository = dataSource.getTreeRepository(Category);
     this.parametersRepository = dataSource.getRepository(Parameter);
@@ -62,6 +65,76 @@ export class CategoryService {
     return {
       rows: await queryBuilder.getMany(),
       length: await queryBuilder.getCount(),
+    };
+  }
+
+  async getCategoriesLight(queryParams: CategoryQueryDTO): Promise<PaginationDTO<Category>> {
+    const {
+      name,
+      image,
+      url,
+      parameters,
+      parent,
+      children,
+      sortBy = 'name',
+      orderBy = 'DESC',
+      offset = 0,
+      limit = 10,
+    } = queryParams;
+
+    // const queryBuilder = this.categoryRepository
+    //   .createQueryBuilder('category')
+    //   .leftJoinAndSelect('category.parameters', 'parameter')
+    //   .leftJoinAndSelect('category.children', 'categoryChildren')
+    //   .leftJoinAndSelect('category.parent', 'categoryParent');
+
+    const queryBuilder = this.categoryRepository
+      .createQueryBuilder('category')
+      // Main entity – select only needed columns
+      .select(['category.id', 'category.name', 'category.image', 'category.url'])
+      // Relations – select only needed columns
+      .leftJoin('category.parameters', 'parameter')
+      .addSelect(['parameter.id', 'parameter.name']) // adjust as needed
+      .leftJoin('category.children', 'categoryChildren')
+      .addSelect(['categoryChildren.id', 'categoryChildren.name', 'categoryChildren.url'])
+      .leftJoin('category.parent', 'categoryParent')
+      .addSelect(['categoryParent.id', 'categoryParent.name', 'categoryParent.url']);
+
+    if (name) {
+      queryBuilder.andWhere('category.name LIKE :name', { name: `%${name}%` });
+    }
+    if (image) {
+      queryBuilder.andWhere('category.image LIKE :image', { image: `%${image}%` });
+    }
+    if (url) {
+      queryBuilder.andWhere('category.url LIKE :url', { url: `%${url}%` });
+    }
+    if (parameters) {
+      queryBuilder.andWhere('parameter.name IN (:...parameters)', { parameters: parameters });
+    }
+    if (parent) {
+      queryBuilder.andWhere('categoryParent.url = :parent', { parent: parent });
+    }
+    if (children) {
+      queryBuilder.andWhere('categoryChildren.id IN (:...children)', { children: children });
+    }
+
+    // queryBuilder.orderBy(`category.${sortBy}`, orderBy).skip(offset).take(limit);
+    // const result = await queryBuilder.getMany();
+    // const { desc, createdAt, updatedAt, ...others } = result;
+
+    // return {
+    //   rows: others,
+    //   length: await queryBuilder.getCount(),
+    // };
+
+    queryBuilder.orderBy(`category.${sortBy}`, orderBy).skip(offset).take(limit);
+
+    const [result, total] = await queryBuilder.getManyAndCount();
+
+    return {
+      rows: result, // already filtered – no extra loop needed
+      length: total,
     };
   }
 

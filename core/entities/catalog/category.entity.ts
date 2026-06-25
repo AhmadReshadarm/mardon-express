@@ -2,11 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinTable,
-  ManyToMany,
-  ManyToOne,
   OneToMany,
-  OneToOne,
   PrimaryGeneratedColumn,
   Tree,
   TreeChildren,
@@ -15,7 +11,6 @@ import {
 } from 'typeorm';
 import { Parameter } from './parameter.entity';
 import { IsNotEmpty } from 'class-validator';
-import { Product } from './product.entity';
 
 @Tree('closure-table')
 @Entity()
@@ -51,9 +46,6 @@ export class Category {
   @IsNotEmpty()
   @Column({ unique: true })
   url: string;
-
-  // @OneToMany(() => Product, product => product.brand)
-  // products?: Product[];
 
   constructor(args?: {
     name: string;

@@ -46,45 +46,6 @@ export class ImageController {
     }
   }
 
-  // @Post()
-  // @Middleware([verifyToken, isUser, createDestination, multer.array('files')])
-  // async uploadImages(req: Request, resp: Response) {
-  //   const files: ImageDto[] = (req as any).files ?? [];
-  //   const imagesCoverted: ImageDto[] = [];
-  //   function sleep(ms: number) {
-  //     return new Promise(resolve => setTimeout(resolve, ms));
-  //   }
-  //   try {
-  //     files.map(async image => {
-  //       const sections = image.filename.split('.');
-  //       const filename = sections[0];
-  //       const path = `./files/${filename}.webp`;
-  //       sharp(image.path)
-  //         .webp({ lossless: false })
-  //         .toFile(path, error => {
-  //           if (error) {
-  //             console.log(error);
-  //           }
-  //           imagesCoverted.push({
-  //             filename: `${filename}.webp`,
-  //             originalname: image.originalname,
-  //             mimetype: image.mimetype,
-  //             size: image.size,
-  //           });
-  //         });
-  //     });
-
-  //     await sleep(1000);
-  //     files.map(image => {
-  //       fs.unlinkSync(`${DESTINATION}/${image.filename}`);
-  //     });
-  //     await this.imageService.uploadImages(imagesCoverted);
-  //     resp.json(imagesCoverted.map(image => image.filename));
-  //   } catch (error) {
-  //     resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
-  //   }
-  // }
-
   @Post()
   @Middleware([verifyToken, isUser, createDestination, multer.array('files')])
   async uploadImages(req: Request, resp: Response) {
@@ -231,35 +192,4 @@ export class ImageController {
         resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(`${error}`);
       });
   }
-  // @Delete('/inner:fileName')
-  // async deleteImageInner(req: Request, resp: Response) {
-  //   const { fileName } = req.params;
-  //   let endpoints = [
-  //     `${process.env.PRODUCT_DB}/products?image=${fileName}`,
-  //     `${process.env.PRODUCT_DB}/brands?image=${fileName}`,
-  //     `${process.env.PRODUCT_DB}/categories?image=${fileName}`,
-  //   ];
-
-  //   await axios
-  //     .all(endpoints.map(endpoint => axios.get(endpoint)))
-  //     .then(
-  //       axios.spread(async ({ data: products }, { data: brands }, { data: categories }) => {
-  //         if (products.length > 0 || brands.length > 0 || categories.length > 0) {
-  //           resp.status(HttpStatus.FORBIDDEN).json({ products, brands, categories });
-  //           return;
-  //         }
-  //         const removed = await this.imageService.removeImage(fileName);
-  //         fs.unlink(`${DESTINATION}/${fileName}`, err => {
-  //           if (err) {
-  //             resp.status(HttpStatus.NOT_FOUND).json({ message: 'the file your looking for does not exist' });
-  //             return;
-  //           }
-  //           resp.status(HttpStatus.OK).json(removed);
-  //         });
-  //       }),
-  //     )
-  //     .catch(error => {
-  //       resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: `somthing went wrong: ${error}` });
-  //     });
-  // }
 }
