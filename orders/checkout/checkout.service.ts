@@ -250,7 +250,7 @@ export class CheckoutService {
     return {
       id: checkout.id,
       totalAmount: checkout.totalAmount,
-      user: checkout.userId, //(await this.getUser(checkout.userId)) ?? checkout.userId,
+      user: (await this.getUser(checkout.userId)) ?? checkout.userId,
       createdAt: checkout.createdAt,
       updatedAt: checkout.updatedAt,
       basket: {

@@ -285,10 +285,12 @@ export class OrderProductService {
       .getOne();
 
     if (!product) {
-      throw new CustomExternalError([ErrorCode.ENTITY_NOT_FOUND], HttpStatus.NOT_FOUND);
+      console.log(`this product is deleted or not exist anymore ${id}`);
+
+      // throw new CustomExternalError([ErrorCode.ENTITY_NOT_FOUND], HttpStatus.NOT_FOUND);
     }
 
-    return this.mergeProduct(product);
+    return this.mergeProduct(product!);
   }
 
   // FETCH PRODUCTS BY IDS 👇
