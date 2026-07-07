@@ -221,6 +221,217 @@ export class ProductService {
     });
   }
 
+  async getGoogleFeedProducts(): Promise<
+    {
+      id: string;
+      title: string;
+      description: string;
+      link: string;
+      imageLink: string;
+      additionalImages: string[];
+      price: number;
+      googleProductCategory: string;
+      artical: string;
+    }[]
+  > {
+    const products = await this.productRepository
+      .createQueryBuilder('product')
+      .leftJoinAndSelect('product.productVariants', 'pv')
+      .leftJoin('product.category', 'category')
+      .leftJoin('category.parent', 'parent')
+      .select([
+        'product.id',
+        'product.name',
+        'product.desc',
+        'product.url',
+        'product.publish',
+        'category.name',
+        'parent.name',
+        'pv.artical',
+        'pv.price',
+        'pv.images',
+      ])
+      .where('product.publish = :publish', { publish: true })
+      .orderBy('product.id', 'ASC')
+      .getMany();
+
+    return products
+      .filter(p => {
+        const firstVariant = p.productVariants?.[0];
+        return firstVariant && firstVariant.price !== 1;
+      })
+      .map(p => {
+        const variant = p.productVariants[0];
+        const images = this.getProductVariantsImages(p.productVariants);
+        return {
+          id: p.id,
+          title: p.name,
+          description: p.desc?.includes('|') ? p.desc.split('|')[1] : (p.desc ?? ''),
+          link: `https://nbhoz.ru/product/${p.url}`,
+          imageLink: images[0] ? `https://nbhoz.ru/api/images/${images[0]}` : '',
+          additionalImages: images.slice(1).map(img => `https://nbhoz.ru/api/images/${img}`),
+          price: variant.price,
+          googleProductCategory: `${(p.category as any)?.parent?.name} > ${(p.category as any)?.name}`,
+          artical: variant.artical,
+        };
+      });
+  }
+
+  async getYandexFeedProducts(): Promise<
+    {
+      id: string;
+      name: string;
+      url: string;
+      price: number;
+      categoryId: string;
+      description: string;
+      images: string[];
+    }[]
+  > {
+    const products = await this.productRepository
+      .createQueryBuilder('product')
+      .leftJoinAndSelect('product.productVariants', 'pv')
+      .leftJoin('product.category', 'category')
+      .select([
+        'product.id',
+        'product.name',
+        'product.desc',
+        'product.url',
+        'product.publish',
+        'category.id',
+        'pv.price',
+        'pv.images',
+      ])
+      .where('product.publish = :publish', { publish: true })
+      .orderBy('product.id', 'ASC')
+      .getMany();
+
+    return products
+      .filter(p => {
+        const firstVariant = p.productVariants?.[0];
+        return firstVariant && firstVariant.price !== 1;
+      })
+      .map(p => {
+        const images = this.getProductVariantsImages(p.productVariants);
+        return {
+          id: p.id,
+          name: p.name,
+          url: `https://nbhoz.ru/product/${p.url}`,
+          price: p.productVariants[0].price,
+          categoryId: p.category.id,
+          description: p.desc?.includes('|') ? p.desc.split('|')[1] : (p.desc ?? ''),
+          images: images.map(img => `https://nbhoz.ru/api/images/${img}`),
+        };
+      });
+  }
+
+  async getYandexWebmasterProducts(): Promise<
+    {
+      id: string;
+      name: string;
+      url: string;
+      price: number;
+      categoryId: string;
+      description: string;
+      images: string[];
+      params: { name: string; value: string }[];
+    }[]
+  > {
+    // Load all parameters once (lightweight)
+    const allParams = await this.getParameters({ limit: 10000 });
+    const paramMap = new Map<string, string>(); // id -> name
+    allParams.rows.forEach(param => paramMap.set(param.id, param.name));
+
+    const products = await this.productRepository
+      .createQueryBuilder('product')
+      .leftJoinAndSelect('product.productVariants', 'pv')
+      .leftJoinAndSelect('product.parameterProducts', 'pp')
+      .leftJoin('product.category', 'category')
+      .select([
+        'product.id',
+        'product.name',
+        'product.desc',
+        'product.url',
+        'product.publish',
+        'category.id',
+        'pv.price',
+        'pv.images',
+        'pp.parameterId',
+        'pp.value',
+      ])
+      .where('product.publish = :publish', { publish: true })
+      .orderBy('product.id', 'ASC')
+      .getMany();
+
+    return products
+      .filter(p => {
+        const firstVariant = p.productVariants?.[0];
+        return firstVariant && firstVariant.price !== 1;
+      })
+      .map(p => {
+        const images = this.getProductVariantsImages(p.productVariants);
+        const params = (p.parameterProducts || [])
+          .filter(pp => pp.value && pp.value !== '-' && pp.value !== '_' && pp.value !== '')
+          .map(pp => ({
+            name: paramMap.get(pp.parameterId) || '',
+            value: pp.value,
+          }));
+        return {
+          id: p.id,
+          name: p.name,
+          url: `https://nbhoz.ru/product/${p.url}`,
+          price: p.productVariants[0].price,
+          categoryId: p.category.id,
+          description: p.desc ?? '',
+          images: images.map(img => `https://nbhoz.ru/api/images/${img}`),
+          params,
+        };
+      });
+  }
+
+  async getYandexWebmasterRssProducts(): Promise<
+    {
+      name: string;
+      url: string;
+      description: string;
+      image: string;
+      artical: string;
+    }[]
+  > {
+    const products = await this.productRepository
+      .createQueryBuilder('product')
+      .leftJoinAndSelect('product.productVariants', 'pv')
+      .select([
+        'product.id',
+        'product.name',
+        'product.desc',
+        'product.url',
+        'product.publish',
+        'pv.artical',
+        'pv.images',
+        'pv.price',
+      ])
+      .where('product.publish = :publish', { publish: true })
+      .orderBy('product.id', 'ASC')
+      .getMany();
+
+    return products
+      .filter(p => {
+        const firstVariant = p.productVariants?.[0];
+        return firstVariant && firstVariant.price !== 1;
+      })
+      .map(p => {
+        const images = this.getProductVariantsImages(p.productVariants);
+        return {
+          name: p.name,
+          url: `https://nbhoz.ru/product/${p.url}`,
+          description: p.desc?.includes('|') ? p.desc.split('|')[1] : (p.desc ?? ''),
+          image: images[0] ? `https://nbhoz.ru/api/images/${images[0]}` : '',
+          artical: p.productVariants[0].artical,
+        };
+      });
+  }
+
   async getProductsPriceRange(
     queryParams: ProductQueryDTO,
   ): Promise<{ minPrice: number; maxPrice: number } | undefined> {
