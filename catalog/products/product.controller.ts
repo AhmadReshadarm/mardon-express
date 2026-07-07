@@ -7,7 +7,6 @@ import { Category, Product, Tag } from '../../core/entities';
 import { TagService } from '../tags/tag.service';
 import { Controller, Delete, Get, Middleware, Post, Put } from '../../core/decorators';
 import { isAdmin, verifyToken } from '../../core/middlewares';
-import redis from '../../core/lib/redis';
 import { create } from 'xmlbuilder2';
 import { CategoryService } from '../../catalog/categories/category.service';
 
@@ -365,83 +364,70 @@ export class ProductController {
     }
   }
 
-  // product.controller.ts – replace the getProductsVK method
-
   @Get('vk')
   async getProductsVK(req: Request, resp: Response) {
     try {
-      const cacheKey = 'vk:feed:xml';
-      let xml = await redis.get(cacheKey);
-
-      if (!xml) {
-        // 1. Fetch categories (lightweight, cache separately if needed)
-        const categoriesTree = await this.categoryService.getCategories({ limit: 1000 });
-        const categoryArray: any[] = [];
-        categoriesTree.rows.forEach(cat => {
-          if (!cat.parent) {
-            categoryArray.push({ '@id': cat.id, '#': cat.name });
-            cat.children?.forEach(child => {
-              categoryArray.push({
-                '@id': child.id,
-                '@parentId': cat.id,
-                '#': child.name,
-              });
+      // 1. Fetch categories
+      const categoriesTree = await this.categoryService.getCategories({ limit: 1000 });
+      const categoryArray: any[] = [];
+      categoriesTree.rows.forEach(cat => {
+        if (!cat.parent) {
+          categoryArray.push({ '@id': cat.id, '#': cat.name });
+          cat.children?.forEach(child => {
+            categoryArray.push({
+              '@id': child.id,
+              '@parentId': cat.id,
+              '#': child.name,
             });
-          }
-        });
+          });
+        }
+      });
 
-        // 2. Fetch products using the lightweight method
-        const products = await this.productService.getVkFeedProducts();
+      // 2. Fetch products with the lightweight method (only published)
+      const products = await this.productService.getVkFeedProducts();
 
-        // 3. Build offers
-        const offers = products.map(p => ({
-          '@id': p.id,
-          '@available': p.available ? 'true' : 'false',
-          'price': p.price,
-          'currencyId': 'RUB',
-          'categoryId': p.categoryId,
-          'name': p.name,
-          'description': { '#': `<![CDATA[${p.description}]]>` }, // CDATA!
-          'picture': p.picture,
-          'url': p.url,
-        }));
+      // 3. Build offers
+      const offers = products.map(p => ({
+        '@id': p.id,
+        '@available': p.available ? 'true' : 'false',
+        'price': p.price,
+        'currencyId': 'RUB',
+        'categoryId': p.categoryId,
+        'name': p.name,
+        'description': { '#': `<![CDATA[${p.description}]]>` },
+        'picture': p.picture,
+        'url': p.url,
+      }));
 
-        const currentDate = new Date();
-        const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')} ${String(currentDate.getHours()).padStart(2, '0')}:${String(currentDate.getMinutes()).padStart(2, '0')}`;
+      const currentDate = new Date();
+      const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')} ${String(currentDate.getHours()).padStart(2, '0')}:${String(currentDate.getMinutes()).padStart(2, '0')}`;
 
-        const payload = {
-          yml_catalog: {
-            '@date': dateStr,
-            'shop': {
-              name: 'NBHOZ – интернет магазин хозтовары оптом',
-              company: 'NBHOZ',
-              url: 'https://nbhoz.ru',
-              currencies: {
-                currency: {
-                  '@id': 'RUB',
-                  '@rate': '1',
-                },
+      const payload = {
+        yml_catalog: {
+          '@date': dateStr,
+          'shop': {
+            name: 'NBHOZ – интернет магазин хозтовары оптом',
+            company: 'NBHOZ',
+            url: 'https://nbhoz.ru',
+            currencies: {
+              currency: {
+                '@id': 'RUB',
+                '@rate': '1',
               },
-              categories: { category: categoryArray },
-              offers: { offer: offers },
             },
+            categories: { category: categoryArray },
+            offers: { offer: offers },
           },
-        };
+        },
+      };
 
-        const root = create({ encoding: 'utf-8' }, payload);
-        xml = root.end({ prettyPrint: true });
-
-        // Cache for 6 hours (21600 seconds)
-        await redis.set(cacheKey, xml, 'EX', 21600);
-      }
-
-      // Also write the file to disk if needed (optional)
-      // await fs.writeFile(`${__dirname}/vk.xml`, xml, { flag: 'w' }, err => { ... });
+      const root = create({ encoding: 'utf-8' }, payload);
+      const xml = root.end({ prettyPrint: true });
 
       resp.setHeader('Content-Type', 'text/xml; charset=utf-8');
       resp.send(xml);
     } catch (error) {
-      resp.status(500).json(error);
+      resp.status(500).json({ message: `VK feed error: ${error}` });
     }
   }
 
@@ -589,7 +575,6 @@ export class ProductController {
 
       tags ? (newProduct.tags = await this.tagService.getTagsByIds(tags.map((tag: Tag) => String(tag)))) : null;
       const created = await this.productService.createProduct(newProduct);
-      await redis.del('vk:feed:xml');
       resp.status(HttpStatus.CREATED).json({ id: created.id });
     } catch (error) {
       resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
@@ -607,7 +592,6 @@ export class ProductController {
       tags ? (newProduct.tags = await this.tagService.getTagsByIds(tags.map((tag: Tag) => String(tag)))) : null;
 
       const updated = await this.productService.updateProduct(id, newProduct);
-      await redis.del('vk:feed:xml');
       resp.status(HttpStatus.OK).json(updated);
     } catch (error) {
       resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
@@ -620,7 +604,6 @@ export class ProductController {
     const { id } = req.params;
     try {
       const removed = await this.productService.removeProduct(id);
-      await redis.del('vk:feed:xml');
       resp.status(HttpStatus.OK).json(removed);
     } catch (error) {
       resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
