@@ -10,7 +10,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-// import { Brand } from './brand.entity';
 import { Category } from './category.entity';
 import { ParameterProducts } from './parameterProducts.entity';
 import { ProductVariant } from './productVariant.entity';
@@ -42,13 +41,12 @@ export class Product {
   @ManyToOne(() => Category, category => category.id, { nullable: false, cascade: true, onDelete: 'CASCADE' })
   category: Category;
 
-  // @IsNotEmpty()
-  // @ManyToOne(() => Brand, brand => brand.id, { nullable: false, cascade: true, onDelete: 'CASCADE' })
-  // brand: Brand;
-
   @IsNotEmpty()
   @Column({ unique: true })
   url: string;
+
+  @Column({ default: true })
+  publish: boolean;
 
   @ManyToMany(() => Tag, tag => tag.products, { cascade: true, nullable: true })
   @JoinTable()
@@ -67,7 +65,7 @@ export class Product {
     keywords: string;
     category: Category;
     url: string;
-    // brand: Brand;
+    publish: boolean;
     tags?: Tag[];
     parameterProducts: ParameterProducts[];
     productVariants: ProductVariant[];
@@ -79,7 +77,7 @@ export class Product {
       this.keywords = args.keywords;
       this.category = args.category;
       this.url = args.url;
-      // this.brand = args.brand;
+      this.publish = args.publish;
       this.tags = args.tags;
       this.parameterProducts = args.parameterProducts;
       this.productVariants = args.productVariants;

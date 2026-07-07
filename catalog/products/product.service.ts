@@ -27,6 +27,7 @@ export class ProductService {
     const {
       name,
       userHistory,
+      publish,
       minPrice,
       maxPrice,
       desc,
@@ -95,6 +96,9 @@ export class ProductService {
     if (desc) {
       queryBuilder.andWhere('product.desc LIKE :desc', { desc: `%${desc}%` });
     }
+    if (publish) {
+      queryBuilder.andWhere('product.publish = :publish', { publish: `%${publish}%` });
+    }
     if (available) {
       queryBuilder.andWhere('productVariant.available = :available', { available: `%${available}%` });
     }
@@ -155,6 +159,66 @@ export class ProductService {
       rows: await Promise.all(results),
       length: await queryBuilder.getCount(),
     };
+  }
+
+  async getSitemapProducts(limit: number, offset: number): Promise<{ url: string; updatedAt: Date }[]> {
+    const rows = await this.productRepository
+      .createQueryBuilder('product')
+      .select(['product.url', 'product.updatedAt'])
+      .where('product.publish = :publish', { publish: true })
+      .orderBy('product.id', 'ASC')
+      .skip(offset)
+      .take(limit)
+      .getMany();
+
+    return rows.map(p => ({ url: p.url, updatedAt: p.updatedAt }));
+  }
+
+  async getVkFeedProducts(): Promise<
+    {
+      id: string;
+      name: string;
+      url: string;
+      price: number;
+      categoryId: string;
+      description: string;
+      picture: string;
+      available: boolean;
+    }[]
+  > {
+    const products = await this.productRepository
+      .createQueryBuilder('product')
+      .leftJoin('product.productVariants', 'pv') // only first variant needed
+      .leftJoin('product.category', 'category')
+      .select([
+        'product.id',
+        'product.name',
+        'product.url',
+        'product.desc',
+        'product.publish',
+        'category.id',
+        'pv.price',
+        'pv.images',
+        'pv.available',
+      ])
+      .where('pv.price IS NOT NULL') // ignore products without variant
+      .where('product.publish = :publish', { publish: true })
+      .orderBy('product.id', 'ASC')
+      .getMany();
+
+    return products.map(product => {
+      const variant = product.productVariants?.[0];
+      return {
+        id: product.id,
+        name: product.name.slice(0, 100), // VK limit
+        url: `https://nbhoz.ru/product/${product.url}`,
+        price: variant?.price ?? 0,
+        categoryId: product.category?.id ?? '',
+        description: product.desc?.includes('|') ? product.desc.split('|')[1] : (product.desc ?? ''),
+        picture: variant?.images ? `https://nbhoz.ru/api/images/${variant.images.split(', ')[0]}` : '',
+        available: variant?.available ?? true,
+      };
+    });
   }
 
   async getProductsPriceRange(

@@ -7,9 +7,11 @@ import { Category, Product, Tag } from '../../core/entities';
 import { TagService } from '../tags/tag.service';
 import { Controller, Delete, Get, Middleware, Post, Put } from '../../core/decorators';
 import { isAdmin, verifyToken } from '../../core/middlewares';
+import redis from '../../core/lib/redis';
 import { create } from 'xmlbuilder2';
 import { CategoryService } from '../../catalog/categories/category.service';
-import * as fs from 'fs';
+
+// import * as fs from 'fs';
 
 @singleton()
 @Controller('/products')
@@ -30,30 +32,22 @@ export class ProductController {
     }
   }
 
-  // getProductVariantsImages(productVariants?: ProductVariant[]) {
-  //   let images: string[] = [];
-  //   productVariants?.forEach(variant => {
-  //     const variantImages = variant.images ? variant.images.split(', ') : [];
-  //     images = images.concat(variantImages);
-  //   });
-  //   return images;
-  // }
+  @Get('sitemap')
+  async getProductsSitemap(req: Request, resp: Response) {
+    try {
+      const { offset = 0, limit = 50000 } = req.query;
+      const products = await this.productService.getSitemapProducts(Number(limit), Number(offset));
+      resp.json(products);
+    } catch (error) {
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
+    }
+  }
 
   @Get('google')
   async getProductsGoogle(req: Request, resp: Response) {
     try {
       const products: any = await this.productService.getProducts({ limit: 100000 });
       const filtered = products.rows.filter((product: any) => product?.productVariants![0]?.price !== 1);
-
-      // const getProductVariantsImages = (productVariants?: ProductVariant[]) => {
-      //   let images: string[] = [];
-      //   productVariants?.forEach(variant => {
-      //     const variantImages = variant.images ? variant.images.split(', ') : [];
-      //     images = images.concat(variantImages);
-      //   });
-      //   return images;
-      // };
-
       const item = filtered.map((product: any) => {
         const images = this.productService.getProductVariantsImages(product.productVariants);
         const addetinalImages = images.map(image => `https://nbhoz.ru/api/images/${image}`);
@@ -371,94 +365,174 @@ export class ProductController {
     }
   }
 
-  @Get('vk/:fileName')
+  // product.controller.ts – replace the getProductsVK method
+
+  @Get('vk')
   async getProductsVK(req: Request, resp: Response) {
-    const { fileName } = req.params;
     try {
-      const products: any = await this.productService.getProducts({ limit: 100000 });
-      const filtered = products.rows.filter((product: any) => product?.productVariants![0]?.price !== 1);
-      const categoriesTree = await this.categoryService.getCategories({ limit: 1000 });
-      const filteredCategoriesTree: Category[] = [];
-      categoriesTree.rows.map(category => {
-        if (category.parent === null) {
-          filteredCategoriesTree.push(category);
-        }
-      });
+      const cacheKey = 'vk:feed:xml';
+      let xml = await redis.get(cacheKey);
 
-      const categoryArray: any = [];
-      filteredCategoriesTree.map(category => {
-        categoryArray.push({
-          '@id': category.id,
-          '#': category.name,
+      if (!xml) {
+        // 1. Fetch categories (lightweight, cache separately if needed)
+        const categoriesTree = await this.categoryService.getCategories({ limit: 1000 });
+        const categoryArray: any[] = [];
+        categoriesTree.rows.forEach(cat => {
+          if (!cat.parent) {
+            categoryArray.push({ '@id': cat.id, '#': cat.name });
+            cat.children?.forEach(child => {
+              categoryArray.push({
+                '@id': child.id,
+                '@parentId': cat.id,
+                '#': child.name,
+              });
+            });
+          }
         });
-        category.children.map(childCategory => {
-          categoryArray.push({ '@id': childCategory.id, '@parentId': category.id, '#': childCategory.name });
-        });
-      });
 
-      const offer = filtered.map((product: any) => {
-        return {
-          '@id': product.id,
-          '@available': 'true',
-          'price': product.productVariants[0].price,
+        // 2. Fetch products using the lightweight method
+        const products = await this.productService.getVkFeedProducts();
+
+        // 3. Build offers
+        const offers = products.map(p => ({
+          '@id': p.id,
+          '@available': p.available ? 'true' : 'false',
+          'price': p.price,
           'currencyId': 'RUB',
-          'categoryId': product.category.id,
-          'name': product.name.slice(0, 100),
-          'description': product?.desc?.includes('|') ? product.desc.split('|')[1] : product.desc,
-          'picture': `https://nbhoz.ru/api/images/${product?.productVariants![0]?.images?.split(', ')[0]}`,
-          'url': `https://nbhoz.ru/product/${product.url}`,
-          'rating': product?.rating?.avg,
-        };
-      });
-      const currentDate = new Date();
-      const payload = {
-        yml_catalog: {
-          '@date': `${currentDate.getFullYear()}-${
-            currentDate.getMonth() < 10 ? '0' + currentDate.getMonth() : currentDate.getMonth()
-          }-${
-            currentDate.getDate() < 10 ? '0' + currentDate.getDate() : currentDate.getDate()
-          } ${currentDate.getHours()}:${currentDate.getMinutes()}`,
-          'shop': {
-            name: 'NBHOZ - интернет магазин хозтовары оптом. по выгодным ценам',
-            company: 'NBHOZ',
-            url: 'https://nbhoz.ru',
-            currencies: {
-              currency: {
-                '@id': 'RUB',
-                '@rate': '1',
+          'categoryId': p.categoryId,
+          'name': p.name,
+          'description': { '#': `<![CDATA[${p.description}]]>` }, // CDATA!
+          'picture': p.picture,
+          'url': p.url,
+        }));
+
+        const currentDate = new Date();
+        const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')} ${String(currentDate.getHours()).padStart(2, '0')}:${String(currentDate.getMinutes()).padStart(2, '0')}`;
+
+        const payload = {
+          yml_catalog: {
+            '@date': dateStr,
+            'shop': {
+              name: 'NBHOZ – интернет магазин хозтовары оптом',
+              company: 'NBHOZ',
+              url: 'https://nbhoz.ru',
+              currencies: {
+                currency: {
+                  '@id': 'RUB',
+                  '@rate': '1',
+                },
               },
-            },
-            categories: {
-              category: categoryArray,
-            },
-            offers: {
-              offer,
+              categories: { category: categoryArray },
+              offers: { offer: offers },
             },
           },
-        },
-      };
-      const opts = {
-        encoding: 'utf-8',
-      };
+        };
 
-      const root = create(opts, payload);
+        const root = create({ encoding: 'utf-8' }, payload);
+        xml = root.end({ prettyPrint: true });
 
-      const xml = root.end({ prettyPrint: true });
+        // Cache for 6 hours (21600 seconds)
+        await redis.set(cacheKey, xml, 'EX', 21600);
+      }
 
-      await fs.writeFile(`${__dirname}/vk.xml`, xml, { flag: 'w' }, err => {
-        if (err) console.log(err);
-      });
+      // Also write the file to disk if needed (optional)
+      // await fs.writeFile(`${__dirname}/vk.xml`, xml, { flag: 'w' }, err => { ... });
 
-      const loc = `${__dirname}/${fileName}`;
-      resp.writeHead(200, {
-        'Content-Type': 'text/xml',
-      });
-      let filestream = fs.createReadStream(loc);
-      filestream.pipe(resp);
+      resp.setHeader('Content-Type', 'text/xml; charset=utf-8');
+      resp.send(xml);
     } catch (error) {
-      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
+      resp.status(500).json(error);
     }
   }
+
+  // @Get('vk/:fileName')
+  // async getProductsVK(req: Request, resp: Response) {
+  //   const { fileName } = req.params;
+  //   try {
+  //     const products: any = await this.productService.getProducts({ limit: 100000 });
+  //     const filtered = products.rows.filter((product: any) => product?.productVariants![0]?.price !== 1);
+  //     const categoriesTree = await this.categoryService.getCategories({ limit: 1000 });
+  //     const filteredCategoriesTree: Category[] = [];
+  //     categoriesTree.rows.map(category => {
+  //       if (category.parent === null) {
+  //         filteredCategoriesTree.push(category);
+  //       }
+  //     });
+
+  //     const categoryArray: any = [];
+  //     filteredCategoriesTree.map(category => {
+  //       categoryArray.push({
+  //         '@id': category.id,
+  //         '#': category.name,
+  //       });
+  //       category.children.map(childCategory => {
+  //         categoryArray.push({ '@id': childCategory.id, '@parentId': category.id, '#': childCategory.name });
+  //       });
+  //     });
+
+  //     const offer = filtered.map((product: any) => {
+  //       return {
+  //         '@id': product.id,
+  //         '@available': 'true',
+  //         'price': product.productVariants[0].price,
+  //         'currencyId': 'RUB',
+  //         'categoryId': product.category.id,
+  //         'name': product.name.slice(0, 100),
+  //         'description': product?.desc?.includes('|') ? product.desc.split('|')[1] : product.desc,
+  //         'picture': `https://nbhoz.ru/api/images/${product?.productVariants![0]?.images?.split(', ')[0]}`,
+  //         'url': `https://nbhoz.ru/product/${product.url}`,
+  //         'rating': product?.rating?.avg,
+  //       };
+  //     });
+  //     const currentDate = new Date();
+  //     const payload = {
+  //       yml_catalog: {
+  //         '@date': `${currentDate.getFullYear()}-${
+  //           currentDate.getMonth() < 10 ? '0' + currentDate.getMonth() : currentDate.getMonth()
+  //         }-${
+  //           currentDate.getDate() < 10 ? '0' + currentDate.getDate() : currentDate.getDate()
+  //         } ${currentDate.getHours()}:${currentDate.getMinutes()}`,
+  //         'shop': {
+  //           name: 'NBHOZ - интернет магазин хозтовары оптом. по выгодным ценам',
+  //           company: 'NBHOZ',
+  //           url: 'https://nbhoz.ru',
+  //           currencies: {
+  //             currency: {
+  //               '@id': 'RUB',
+  //               '@rate': '1',
+  //             },
+  //           },
+  //           categories: {
+  //             category: categoryArray,
+  //           },
+  //           offers: {
+  //             offer,
+  //           },
+  //         },
+  //       },
+  //     };
+  //     const opts = {
+  //       encoding: 'utf-8',
+  //     };
+
+  //     const root = create(opts, payload);
+
+  //     const xml = root.end({ prettyPrint: true });
+
+  //     await fs.writeFile(`${__dirname}/vk.xml`, xml, { flag: 'w' }, err => {
+  //       if (err) console.log(err);
+  //     });
+
+  //     const loc = `${__dirname}/${fileName}`;
+  //     resp.writeHead(200, {
+  //       'Content-Type': 'text/xml',
+  //     });
+  //     let filestream = fs.createReadStream(loc);
+  //     filestream.pipe(resp);
+  //   } catch (error) {
+  //     resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
+  //   }
+  // }
 
   @Get('priceRange')
   async getProductsPriceRange(req: Request, resp: Response) {
@@ -509,13 +583,13 @@ export class ProductController {
   @Post()
   @Middleware([verifyToken, isAdmin])
   async createProduct(req: Request, resp: Response) {
-    const { tags, sizes } = req.body;
+    const { tags } = req.body;
     try {
       const newProduct = await validation(new Product(req.body));
 
       tags ? (newProduct.tags = await this.tagService.getTagsByIds(tags.map((tag: Tag) => String(tag)))) : null;
       const created = await this.productService.createProduct(newProduct);
-
+      await redis.del('vk:feed:xml');
       resp.status(HttpStatus.CREATED).json({ id: created.id });
     } catch (error) {
       resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
@@ -533,7 +607,7 @@ export class ProductController {
       tags ? (newProduct.tags = await this.tagService.getTagsByIds(tags.map((tag: Tag) => String(tag)))) : null;
 
       const updated = await this.productService.updateProduct(id, newProduct);
-
+      await redis.del('vk:feed:xml');
       resp.status(HttpStatus.OK).json(updated);
     } catch (error) {
       resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
@@ -546,7 +620,7 @@ export class ProductController {
     const { id } = req.params;
     try {
       const removed = await this.productService.removeProduct(id);
-
+      await redis.del('vk:feed:xml');
       resp.status(HttpStatus.OK).json(removed);
     } catch (error) {
       resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);

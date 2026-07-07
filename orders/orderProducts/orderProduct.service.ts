@@ -1,9 +1,9 @@
 import { singleton } from 'tsyringe';
 import { DataSource, Equal, Repository } from 'typeorm';
-import { CustomExternalError } from '../../core/domain/error/custom.external.error';
+// import { CustomExternalError } from '../../core/domain/error/custom.external.error';
 import { ErrorCode } from '../../core/domain/error/error.code';
 import { Basket, OrderProduct, Product, Review } from '../../core/entities';
-import { HttpStatus } from '../../core/lib/http-status';
+// import { HttpStatus } from '../../core/lib/http-status';
 // import axios from 'axios';
 import {
   BasketDTO,
@@ -17,6 +17,7 @@ import {
 } from '../order.dtos';
 import { v4 } from 'uuid';
 import { PaginationDTO, RatingDTO } from '../../core/lib/dto';
+import { CustomInternalError } from 'core/domain/error/custom.internal.error';
 
 @singleton()
 export class OrderProductService {
@@ -92,7 +93,8 @@ export class OrderProductService {
       .getOne();
 
     if (!queryBuilder) {
-      throw new CustomExternalError([ErrorCode.ENTITY_NOT_FOUND], HttpStatus.NOT_FOUND);
+      throw new CustomInternalError(`${ErrorCode.ENTITY_NOT_FOUND}, Ordered product ID:${id}`);
+      // throw new CustomExternalError([ErrorCode.ENTITY_NOT_FOUND], HttpStatus.NOT_FOUND);
     }
 
     return this.mergeOrderProduct(queryBuilder);
@@ -190,7 +192,8 @@ export class OrderProductService {
       .getOne();
 
     if (!queryBuilder) {
-      throw new CustomExternalError([ErrorCode.ENTITY_NOT_FOUND], HttpStatus.NOT_FOUND);
+      throw new CustomInternalError(`${ErrorCode.ENTITY_NOT_FOUND}, Basket ID:${id}`);
+      // throw new CustomExternalError([ErrorCode.ENTITY_NOT_FOUND], HttpStatus.NOT_FOUND);
     }
 
     return this.mergeBasket(queryBuilder);
@@ -275,6 +278,21 @@ export class OrderProductService {
     };
   }
 
+  async getOrderProductOnly(id: string): Promise<OrderProduct | null> {
+    const queryBuilder = await this.orderProductRepository
+      .createQueryBuilder('orderProduct')
+      .leftJoinAndSelect('orderProduct.inBasket', 'basket')
+      .where('orderProduct.id = :id', { id: id });
+
+    const orderProduct = queryBuilder.getOne();
+    if (!orderProduct) {
+      throw new CustomInternalError(
+        `${ErrorCode.ENTITY_NOT_FOUND}, Ordered product ID:${id}, in finding for delete operation`,
+      );
+    }
+    return orderProduct;
+  }
+
   // fetch product by id 👇
   async getProduct(id: string): Promise<ProductDTO> {
     const product = await this.productRepository
@@ -285,14 +303,20 @@ export class OrderProductService {
       .getOne();
 
     if (!product) {
-      throw new CustomExternalError([ErrorCode.ENTITY_NOT_FOUND, `product ID:${id}`], HttpStatus.NOT_FOUND);
+      // ------- 👇 self delete product id from order product when the product is not found -------
+      // -------    this is due to fetch error in frontend and to avoid it                  -------
+      const orderProduct = await this.getOrderProductOnly(id);
+      if (orderProduct) {
+        await this.orderProductRepository.remove(orderProduct);
+      }
+      throw new CustomInternalError(`${ErrorCode.ENTITY_NOT_FOUND}, Ordered product ID:${id}`);
+      // throw new CustomExternalError([ErrorCode.ENTITY_NOT_FOUND, `Ordered product ID:${id}`], HttpStatus.NOT_FOUND);
     }
 
     return this.mergeProduct(product);
   }
 
   // FETCH PRODUCTS BY IDS 👇
-
   async getProducts(queryParams: ProductQueryDTO): Promise<PaginationDTO<ProductDTO>> {
     const { ids, sortBy = 'name', orderBy = 'DESC', offset = 0, limit = 10000 } = queryParams;
     const queryBuilder = await this.productRepository
