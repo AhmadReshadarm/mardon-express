@@ -79,7 +79,7 @@ export class AuthController {
         id: '',
         firstName: '', // req.body.firstName,
         lastName: '', // req.body.lastName,
-        email: req.body.email,
+        email: req.body.email.toLowerCase(),
         isVerified: false,
         password: hashedPass,
         role: Role.User,
@@ -123,11 +123,14 @@ export class AuthController {
   @Post('signin')
   async signIn(req: Request, resp: Response) {
     const { email, password } = req.body;
+    const nuturalEmail = email.toLowerCase();
     try {
-      const user = await this.userService.getByEmail(email);
+      const user = await this.userService.getByEmail(nuturalEmail);
 
       if (!user) {
-        resp.status(HttpStatus.BAD_REQUEST).json({ message: `This email: ${email} does not exist in our database` });
+        resp
+          .status(HttpStatus.BAD_REQUEST)
+          .json({ message: `This email: ${nuturalEmail} does not exist in our database` });
         return;
       }
 

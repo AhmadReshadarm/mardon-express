@@ -21,18 +21,17 @@ export class CheckoutService {
   private subscribersRepository: Repository<Subscription>;
   private userRepository: Repository<User>;
   private smptTransporter: Transporter;
-  constructor(dataSource: DataSource, private orderProductService: OrderProductService) {
+  constructor(
+    dataSource: DataSource,
+    private orderProductService: OrderProductService,
+  ) {
     this.checkoutRepository = dataSource.getRepository(Checkout);
     this.subscribersRepository = dataSource.getRepository(Subscription);
     this.userRepository = dataSource.getRepository(User);
     this.smptTransporter = createTransport(transportConfig);
   }
 
-  async getCheckouts(
-    queryParams: CheckoutQueryDTO,
-    authToken: string,
-    userId: string,
-  ): Promise<PaginationDTO<CheckoutDTO>> {
+  async getCheckouts(queryParams: CheckoutQueryDTO, userId: string): Promise<PaginationDTO<CheckoutDTO>> {
     const { addressId, basketId, sortBy = 'createdAt', orderBy = 'DESC', offset = 0, limit = 10 } = queryParams;
 
     const queryBuilder = this.checkoutRepository
@@ -53,7 +52,7 @@ export class CheckoutService {
     queryBuilder.orderBy(`checkout.${sortBy}`, orderBy).skip(offset).take(limit);
 
     const checkouts = await queryBuilder.getMany();
-    const result = checkouts.map(async checkout => await this.mergeCheckout(checkout, authToken));
+    const result = checkouts.map(async checkout => await this.mergeCheckout(checkout));
 
     return {
       rows: await Promise.all(result),
@@ -61,7 +60,7 @@ export class CheckoutService {
     };
   }
 
-  async getAllCheckouts(queryParams: CheckoutQueryDTO, authToken: string): Promise<PaginationDTO<CheckoutDTO>> {
+  async getAllCheckouts(queryParams: CheckoutQueryDTO): Promise<PaginationDTO<CheckoutDTO>> {
     const { addressId, basketId, userId, sortBy = 'createdAt', orderBy = 'DESC', offset = 0, limit = 10 } = queryParams;
 
     const queryBuilder = this.checkoutRepository
@@ -84,7 +83,7 @@ export class CheckoutService {
 
     const checkouts = await queryBuilder.getMany();
 
-    const result = checkouts.map(async checkout => await this.mergeCheckout(checkout, authToken));
+    const result = checkouts.map(async checkout => await this.mergeCheckout(checkout));
 
     return {
       rows: await Promise.all(result),
@@ -92,7 +91,7 @@ export class CheckoutService {
     };
   }
 
-  async getCheckout(id: string, authToken: string): Promise<CheckoutDTO> {
+  async getCheckout(id: string): Promise<CheckoutDTO> {
     const queryBuilder = await this.checkoutRepository
       .createQueryBuilder('checkout')
       .leftJoinAndSelect('checkout.address', 'address')
@@ -105,10 +104,10 @@ export class CheckoutService {
       throw new CustomExternalError([ErrorCode.ENTITY_NOT_FOUND], HttpStatus.NOT_FOUND);
     }
 
-    return this.mergeCheckout(queryBuilder, authToken);
+    return this.mergeCheckout(queryBuilder);
   }
 
-  async getCheckoutByPaymentId(paymentId: string, authToken: string): Promise<CheckoutDTO> {
+  async getCheckoutByPaymentId(paymentId: string): Promise<CheckoutDTO> {
     const queryBuilder = await this.checkoutRepository
       .createQueryBuilder('checkout')
       .leftJoinAndSelect('checkout.address', 'address')
@@ -120,7 +119,7 @@ export class CheckoutService {
       throw new CustomExternalError([ErrorCode.ENTITY_NOT_FOUND], HttpStatus.NOT_FOUND);
     }
 
-    return this.mergeCheckout(queryBuilder, authToken);
+    return this.mergeCheckout(queryBuilder);
   }
 
   async createSubscriber(newSubscrition: Subscription): Promise<Subscription | null> {
@@ -185,7 +184,7 @@ export class CheckoutService {
       throw new CustomExternalError([ErrorCode.ENTITY_NOT_FOUND], HttpStatus.NOT_FOUND);
     }
 
-    return this.mergeCheckout(queryBuilder, '_');
+    return this.mergeCheckout(queryBuilder);
   }
 
   async updateCheckout(id: string, checkoutDTO: Checkout): Promise<CheckoutDTO> {
@@ -211,7 +210,7 @@ export class CheckoutService {
       throw new CustomExternalError([ErrorCode.ENTITY_NOT_FOUND], HttpStatus.NOT_FOUND);
     }
 
-    return this.mergeCheckout(queryBuilder, '_');
+    return this.mergeCheckout(queryBuilder);
   }
 
   async removeCheckout(id: string, user: UserAuth) {
@@ -231,26 +230,25 @@ export class CheckoutService {
     }
   }
 
-  async validation(id: string, authToken: string): Promise<boolean> {
-    const checkout = (await this.getCheckout(id, authToken)) as any;
+  // async validation(id: string): Promise<boolean> {
+  //   const checkout = (await this.getCheckout(id)) as any;
 
-    if (String(checkout.user.id) !== String(checkout.basket.userId)) {
-      return false;
-    }
-    if (String(checkout.user.id) !== String(checkout.address.userId)) {
-      return false;
-    }
-    return true;
-  }
+  //   if (String(checkout.user.id) !== String(checkout.basket.userId)) {
+  //     return false;
+  //   }
+  //   if (String(checkout.user.id) !== String(checkout.address.userId)) {
+  //     return false;
+  //   }
+  //   return true;
+  // }
 
-  async mergeCheckout(checkout: Checkout, authToken: string): Promise<CheckoutDTO> {
+  async mergeCheckout(checkout: Checkout): Promise<CheckoutDTO> {
     const orderProducts =
       checkout.basket.orderProducts?.map(orderProduct => this.orderProductService.mergeOrderProduct(orderProduct)) ??
       [];
 
     return {
       id: checkout.id,
-      // paymentId: checkout.paymentId,
       totalAmount: checkout.totalAmount,
       user: (await this.getUser(checkout.userId)) ?? checkout.userId,
       createdAt: checkout.createdAt,

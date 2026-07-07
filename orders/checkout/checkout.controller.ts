@@ -10,7 +10,7 @@ import { generateInvoiceTemplet, generateUpdateInoviceTemplet } from '../../orde
 import { CheckoutService } from './checkout.service';
 interface EmbeddedImage {
   filename: string;
-  href: string; // Use href for URLs
+  href: string;
   cid: string;
 }
 @singleton()
@@ -24,7 +24,7 @@ export class CheckoutController {
     try {
       const { jwt } = resp.locals;
 
-      const checkouts = await this.checkoutService.getCheckouts(req.query, req.headers.authorization!, jwt.id);
+      const checkouts = await this.checkoutService.getCheckouts(req.query, jwt.id);
 
       resp.status(HttpStatus.OK).json(checkouts);
     } catch (error) {
@@ -36,11 +36,11 @@ export class CheckoutController {
   @Middleware([verifyToken, isAdmin])
   async getAllCheckouts(req: Request, resp: Response) {
     try {
-      const checkouts = await this.checkoutService.getAllCheckouts(req.query, req.headers.authorization!);
+      const checkouts = await this.checkoutService.getAllCheckouts(req.query);
 
       resp.json(checkouts);
     } catch (error) {
-      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: `somthing went wrong ${error}` });
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
     }
   }
 
@@ -48,9 +48,13 @@ export class CheckoutController {
   @Middleware([verifyToken, isAdmin])
   async getCheckout(req: Request, resp: Response) {
     const { id } = req.params;
-    const checkout = await this.checkoutService.getCheckout(id, req.headers.authorization!);
+    try {
+      const checkout = await this.checkoutService.getCheckout(id);
 
-    resp.json(checkout);
+      resp.json(checkout);
+    } catch (error) {
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
+    }
   }
 
   @Post()
@@ -107,22 +111,14 @@ export class CheckoutController {
       }
 
       const invoiceData: string = generateInvoiceTemplet(payload, cidImageMap, req.body.paymentMethod);
-
+      const { ADMIN_MAIL } = process.env;
       const emailAdminPayload = {
-        to: `info@nbhoz.ru`,
+        to: ADMIN_MAIL ?? `info@nbhoz.ru`,
         subject: `Заказ № ${created.id} на nbhoz.ru`,
         html: invoiceData,
         attachments: productAttachments,
       };
       await this.checkoutService.sendMail(emailAdminPayload);
-
-      const emailAdminPayload_2 = {
-        to: `armaan0080@yahoo.com`,
-        subject: `Заказ № ${created.id} на nbhoz.ru`,
-        html: invoiceData,
-        attachments: productAttachments,
-      };
-      await this.checkoutService.sendMail(emailAdminPayload_2);
 
       const emailUserPayload = {
         to: user.role !== Role.Admin ? user.email : req.body.address.receiverEmail,
@@ -147,16 +143,13 @@ export class CheckoutController {
       resp.status(HttpStatus.CREATED).json(result);
     }
     try {
+      const { ADMIN_MAIL } = process.env;
       const payload = {
-        to: 'info@nbhoz.ru',
+        to: ADMIN_MAIL ?? `info@nbhoz.ru`,
         subject: req.body.subject,
         html: req.body.html,
         attachments: req.body.attachments,
       };
-      adminResult = await this.checkoutService.sendMail(payload);
-      payload.to = 'armaan0080@yahoo.com';
-      adminResult = await this.checkoutService.sendMail(payload);
-      payload.to = 'exelon@hoz-mardon.ru';
       adminResult = await this.checkoutService.sendMail(payload);
     } catch (error) {
       console.log(adminResult);
@@ -222,7 +215,7 @@ export class CheckoutController {
     const { jwt } = resp.locals;
     let updated: any;
     try {
-      const checkoutsById = await this.checkoutService.getCheckout(id, req.headers.authorization!);
+      const checkoutsById = await this.checkoutService.getCheckout(id);
       if (!checkoutsById) {
         resp.status(HttpStatus.NOT_FOUND).json({ message: 'Not found!' });
         return;
@@ -260,9 +253,9 @@ export class CheckoutController {
         receiverName: updated.address.receiverName,
       };
       const invoiceData: string = generateUpdateInoviceTemplet(payload);
-
+      const { ADMIN_MAIL } = process.env;
       const emailAdminPayload = {
-        to: `info@nbhoz.ru`,
+        to: ADMIN_MAIL ?? `info@nbhoz.ru`,
         subject: `Статус заказа № ${updated.id} был изменен`,
         html: invoiceData,
       };
