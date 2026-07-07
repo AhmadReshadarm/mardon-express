@@ -80,10 +80,7 @@ export class PaymentController {
   @Middleware([verifyToken, isUser])
   async removePayment(req: Request, resp: Response) {
     const { paymentId } = req.body;
-    const checkoutsByPaymentId = await this.checkoutService.getCheckoutByPaymentId(
-      paymentId,
-      req.headers.authorization!,
-    );
+    const checkoutsByPaymentId = await this.checkoutService.getCheckoutByPaymentId(paymentId);
     if (!checkoutsByPaymentId) {
       resp.status(HttpStatus.FORBIDDEN).json({ message: 'Not allowed!' });
       return;
