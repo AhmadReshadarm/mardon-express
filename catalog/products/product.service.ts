@@ -97,7 +97,7 @@ export class ProductService {
       queryBuilder.andWhere('product.desc LIKE :desc', { desc: `%${desc}%` });
     }
     if (publish) {
-      queryBuilder.andWhere('product.publish = :publish', { publish: true });
+      queryBuilder.andWhere('product.publish = :publish', { publish: `%${publish}%` });
     }
     if (available) {
       queryBuilder.andWhere('productVariant.available = :available', { available: `%${available}%` });
