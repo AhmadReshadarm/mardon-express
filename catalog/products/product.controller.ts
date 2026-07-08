@@ -3,7 +3,7 @@ import { singleton } from 'tsyringe';
 import { HttpStatus } from '../../core/lib/http-status';
 import { validation } from '../../core/lib/validator';
 import { ProductService } from './product.service';
-import { Category, Product, Tag } from '../../core/entities';
+import { Product, Tag } from '../../core/entities';
 import { TagService } from '../tags/tag.service';
 import { Controller, Delete, Get, Middleware, Post, Put } from '../../core/decorators';
 import { isAdmin, verifyToken } from '../../core/middlewares';
@@ -27,7 +27,7 @@ export class ProductController {
       const products = await this.productService.getProducts(req.query);
       resp.json(products);
     } catch (error) {
-      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: `somthing went wrong: ${error}` });
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
     }
   }
 
@@ -749,16 +749,16 @@ export class ProductController {
     }
   }
 
-  @Get('productsUnderOneThousand')
-  async getProductsUnderOneThousand(req: Request, resp: Response) {
-    try {
-      const products = await this.productService.getProducts({ tags: ['UnderOneThousand'] });
+  // @Get('productsUnderOneThousand')
+  // async getProductsUnderOneThousand(req: Request, resp: Response) {
+  //   try {
+  //     const products = await this.productService.getProducts({ tags: ['UnderOneThousand'] });
 
-      resp.json(products);
-    } catch (error) {
-      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
-    }
-  }
+  //     resp.json(products);
+  //   } catch (error) {
+  //     resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
+  //   }
+  // }
 
   @Get(':id')
   async getProduct(req: Request, resp: Response) {
