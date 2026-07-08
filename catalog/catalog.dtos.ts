@@ -8,11 +8,11 @@ export interface ProductQueryDTO {
   readonly name?: string;
   readonly userHistory?: string[];
   readonly artical?: string;
-  readonly publish?: boolean;
+  readonly publish?: string;
   readonly minPrice?: number;
   readonly maxPrice?: number;
   readonly desc?: string;
-  readonly available?: boolean;
+  readonly available?: string;
   readonly colors?: string | string[];
   readonly color?: string;
   readonly categories?: string | string[];
