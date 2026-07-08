@@ -96,11 +96,11 @@ export class ProductService {
     if (desc) {
       queryBuilder.andWhere('product.desc LIKE :desc', { desc: `%${desc}%` });
     }
-    if (publish) {
-      queryBuilder.andWhere('product.publish = :publish', { publish: `%${publish}%` });
+    if (publish !== undefined) {
+      queryBuilder.andWhere('product.publish = :publish', { publish: publish });
     }
-    if (available) {
-      queryBuilder.andWhere('productVariant.available = :available', { available: `%${available}%` });
+    if (available !== undefined) {
+      queryBuilder.andWhere('productVariant.available = :available', { available: available });
     }
     if (colors) {
       queryBuilder.andWhere('color.url IN (:...colors)', { colors: colors });
