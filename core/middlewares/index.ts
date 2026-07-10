@@ -3,3 +3,4 @@ export * from './is-user.middleware';
 export * from './verify-user-id.middleware';
 export * from './verify-token.middleware';
 export * from './logger.middleware';
+export * from './verify-review-token.middleware';

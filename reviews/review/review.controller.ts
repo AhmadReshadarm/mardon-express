@@ -1,14 +1,14 @@
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { singleton } from 'tsyringe';
-import { ReactionReview, Review } from '../../core/entities';
+import { Review } from '../../core/entities';
 import { HttpStatus } from '../../core/lib/http-status';
 import { validation } from '../../core/lib/validator';
 import { ReviewService } from './review.service';
 import { Controller, Delete, Get, Middleware, Post, Put } from '../../core/decorators';
-import { isUser, verifyToken } from '../../core/middlewares';
+import { isAdmin, isUser, verifyReviewToken, verifyToken } from '../../core/middlewares';
 import { Role } from '../../core/enums/roles.enum';
 import { CreateReactionDTO } from '../reviews.dtos';
-import axios from 'axios';
+import { oneTimeToken } from 'reviews/lib/generate.token';
 
 @singleton()
 @Controller('/reviews')
@@ -82,6 +82,48 @@ export class ReviewController {
       await validation(newReview);
       const created = await this.reviewService.createReview(newReview);
 
+      resp.status(HttpStatus.CREATED).json(created);
+    } catch (error) {
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
+    }
+  }
+
+  @Post('by-token')
+  @Middleware([verifyToken, isUser, verifyReviewToken])
+  async createReviewByToken(req: Request, resp: Response) {
+    try {
+      const newReview = new Review(req.body);
+      newReview.userId = resp.locals.user.id;
+
+      if (resp.locals.user.role != Role.Admin) {
+        newReview.showOnMain = false;
+      }
+
+      const product = await this.reviewService.getProductById(newReview.productId);
+      if (!product) {
+        return resp.status(HttpStatus.NOT_FOUND).json('product not founnd');
+      }
+
+      const isReviewAlreadyPublished = !!product?.reviews?.find(review => review.user?.id == newReview.userId);
+      if (isReviewAlreadyPublished) {
+        return resp.status(HttpStatus.CONFLICT).json('already published');
+      }
+
+      await validation(newReview);
+      const created = await this.reviewService.createReview(newReview);
+
+      resp.status(HttpStatus.CREATED).json(created);
+    } catch (error) {
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
+    }
+  }
+
+  @Get('/one-time-token')
+  @Middleware([verifyToken, isAdmin])
+  async generateOneTimeToken(req: Request, resp: Response) {
+    try {
+      const { publicKey } = req.query;
+      const created = oneTimeToken({ publicKey });
       resp.status(HttpStatus.CREATED).json(created);
     } catch (error) {
       resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);

@@ -7,6 +7,7 @@ declare global {
       MYSQL_HOST: string;
       MYSQL_ROOT_PASSWORD: string;
       MYSQL_DATABASE: string;
+      REVIEW_ACCESS_SECRET_TOKEN: string;
     }
   }
 }
