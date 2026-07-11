@@ -5,7 +5,7 @@ import { HttpStatus } from '../lib/http-status';
 export async function verifyReviewToken(req: Request, resp: Response, next: NextFunction) {
   const { token } = req.query;
   const { REVIEW_ACCESS_SECRET_TOKEN } = process.env;
-  const stringfiedToken = JSON.stringify(token);
+  const stringfiedToken: any = token;
   if (!token) {
     resp.status(HttpStatus.UNAUTHORIZED).json({ message: 'Unauthorized: No token found' });
 
