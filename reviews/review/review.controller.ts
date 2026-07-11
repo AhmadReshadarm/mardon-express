@@ -118,17 +118,17 @@ export class ReviewController {
     }
   }
 
-  @Get('one-time-token/:publicKey')
-  @Middleware([verifyToken, isAdmin])
-  async generateOneTimeToken(req: Request, resp: Response) {
-    try {
-      const { publicKey } = req.params;
-      const created = oneTimeToken({ publicKey });
-      resp.status(HttpStatus.CREATED).json({ token: created });
-    } catch (error) {
-      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
-    }
-  }
+  // @Get('one-time-token/:publicKey')
+  // @Middleware([verifyToken, isAdmin])
+  // async generateOneTimeToken(req: Request, resp: Response) {
+  //   try {
+  //     const { publicKey } = req.params;
+  //     const created = oneTimeToken({ publicKey });
+  //     resp.status(HttpStatus.CREATED).json({ token: created });
+  //   } catch (error) {
+  //     resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
+  //   }
+  // }
 
   @Post('reaction')
   @Middleware([verifyToken, isUser])
