@@ -8,7 +8,7 @@ import { Controller, Delete, Get, Middleware, Post, Put } from '../../core/decor
 import { isAdmin, isUser, verifyReviewToken, verifyToken } from '../../core/middlewares';
 import { Role } from '../../core/enums/roles.enum';
 import { CreateReactionDTO } from '../reviews.dtos';
-import { oneTimeToken } from 'reviews/lib/generate.token';
+import { oneTimeToken } from '../lib/generate.token';
 
 @singleton()
 @Controller('/reviews')
@@ -118,17 +118,17 @@ export class ReviewController {
     }
   }
 
-  // @Get('one-time-token/:publicKey')
-  // @Middleware([verifyToken, isAdmin])
-  // async generateOneTimeToken(req: Request, resp: Response) {
-  //   try {
-  //     const { publicKey } = req.params;
-  //     const created = oneTimeToken({ publicKey });
-  //     resp.status(HttpStatus.CREATED).json({ token: created });
-  //   } catch (error) {
-  //     resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
-  //   }
-  // }
+  @Get('one-time-token/:publicKey')
+  @Middleware([verifyToken, isAdmin])
+  async generateOneTimeToken(req: Request, resp: Response) {
+    try {
+      const { publicKey } = req.params;
+      const created = oneTimeToken({ publicKey });
+      resp.status(HttpStatus.CREATED).json({ token: created });
+    } catch (error) {
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
+    }
+  }
 
   @Post('reaction')
   @Middleware([verifyToken, isUser])
