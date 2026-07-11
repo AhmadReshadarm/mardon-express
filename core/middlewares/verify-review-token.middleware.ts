@@ -15,7 +15,7 @@ export async function verifyReviewToken(req: Request, resp: Response, next: Next
   jwt.verify(stringfiedToken, REVIEW_ACCESS_SECRET_TOKEN ?? '', (error: any) => {
     if (error) {
       return resp.status(HttpStatus.FORBIDDEN).json({
-        message: `Access to add review has been expired: ${error} this:${REVIEW_ACCESS_SECRET_TOKEN} this token:${stringfiedToken}`,
+        message: `Access to add review has been expired: ${error}`,
       });
     }
 
