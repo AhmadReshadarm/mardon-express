@@ -16,7 +16,7 @@ export async function verifyReviewToken(req: Request, resp: Response, next: Next
     if (error) {
       return resp
         .status(HttpStatus.FORBIDDEN)
-        .json({ message: `Access to add review has been expired: ${error} this:${token}` });
+        .json({ message: `Access to add review has been expired: ${error} this:${REVIEW_ACCESS_SECRET_TOKEN}` });
     }
 
     next();
