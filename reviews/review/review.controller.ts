@@ -88,47 +88,47 @@ export class ReviewController {
     }
   }
 
-  // @Post('by-token')
-  // @Middleware([verifyToken, isUser, verifyReviewToken])
-  // async createReviewByToken(req: Request, resp: Response) {
-  //   try {
-  //     const newReview = new Review(req.body);
-  //     newReview.userId = resp.locals.user.id;
+  @Post('by-token')
+  @Middleware([verifyToken, isUser, verifyReviewToken])
+  async createReviewByToken(req: Request, resp: Response) {
+    try {
+      const newReview = new Review(req.body);
+      newReview.userId = resp.locals.user.id;
 
-  //     if (resp.locals.user.role != Role.Admin) {
-  //       newReview.showOnMain = false;
-  //     }
+      if (resp.locals.user.role != Role.Admin) {
+        newReview.showOnMain = false;
+      }
 
-  //     const product = await this.reviewService.getProductById(newReview.productId);
-  //     if (!product) {
-  //       return resp.status(HttpStatus.NOT_FOUND).json('product not founnd');
-  //     }
+      const product = await this.reviewService.getProductById(newReview.productId);
+      if (!product) {
+        return resp.status(HttpStatus.NOT_FOUND).json('product not founnd');
+      }
 
-  //     const isReviewAlreadyPublished = !!product?.reviews?.find(review => review.user?.id == newReview.userId);
-  //     if (isReviewAlreadyPublished) {
-  //       return resp.status(HttpStatus.CONFLICT).json('already published');
-  //     }
+      const isReviewAlreadyPublished = !!product?.reviews?.find(review => review.user?.id == newReview.userId);
+      if (isReviewAlreadyPublished) {
+        return resp.status(HttpStatus.CONFLICT).json('already published');
+      }
 
-  //     await validation(newReview);
-  //     const created = await this.reviewService.createReview(newReview);
+      await validation(newReview);
+      const created = await this.reviewService.createReview(newReview);
 
-  //     resp.status(HttpStatus.CREATED).json(created);
-  //   } catch (error) {
-  //     resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
-  //   }
-  // }
+      resp.status(HttpStatus.CREATED).json(created);
+    } catch (error) {
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
+    }
+  }
 
-  // @Get('one-time-token/:publicKey')
-  // @Middleware([verifyToken, isAdmin])
-  // async generateOneTimeToken(req: Request, resp: Response) {
-  //   try {
-  //     const { publicKey } = req.params;
-  //     const created = oneTimeToken({ publicKey });
-  //     resp.status(HttpStatus.CREATED).json({ token: created });
-  //   } catch (error) {
-  //     resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
-  //   }
-  // }
+  @Get('one-time-token/:publicKey')
+  @Middleware([verifyToken, isAdmin])
+  async generateOneTimeToken(req: Request, resp: Response) {
+    try {
+      const { publicKey } = req.params;
+      const created = oneTimeToken({ publicKey });
+      resp.status(HttpStatus.CREATED).json({ token: created });
+    } catch (error) {
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
+    }
+  }
 
   @Post('reaction')
   @Middleware([verifyToken, isUser])
