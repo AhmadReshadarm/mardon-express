@@ -155,10 +155,10 @@ export class ProductService {
 
     // const products = await queryBuilder.getMany();
 
-    const results = products.map(async product => await this.mergeProduct(product));
+    // const results = products.map(async product => await this.mergeProduct(product));
 
     return {
-      rows: await Promise.all(results),
+      rows: products, //await Promise.all(results),
       length: await queryBuilder.getCount(),
     };
   }
@@ -476,7 +476,8 @@ export class ProductService {
       throw new CustomExternalError([ErrorCode.ENTITY_NOT_FOUND], HttpStatus.NOT_FOUND);
     }
 
-    return this.mergeProduct(product);
+    // return this.mergeProduct(product);
+    return product;
   }
 
   createParameters = async (parameters: ParameterProducts[], id: string, counter: number) => {
@@ -511,7 +512,8 @@ export class ProductService {
       throw new CustomExternalError([ErrorCode.ENTITY_NOT_FOUND], HttpStatus.NOT_FOUND);
     }
 
-    return await this.mergeProduct(product);
+    // return await this.mergeProduct(product);
+    return product;
   }
 
   async createProduct(newProduct: Product): Promise<Product> {
@@ -625,125 +627,125 @@ export class ProductService {
     return this.productRepository.remove(product);
   }
 
-  async getReviewsByProductId(id: string): Promise<PaginationDTO<Review> | null> {
-    const reviews = await axios.get(`${process.env.REVIEWS_DB}/reviews/`, {
-      params: {
-        productId: id,
-        merge: 'false',
-        limit: 100000,
-      },
-    });
+  // async getReviewsByProductId(id: string): Promise<PaginationDTO<Review> | null> {
+  //   const reviews = await axios.get(`${process.env.REVIEWS_DB}/reviews/`, {
+  //     params: {
+  //       productId: id,
+  //       merge: 'false',
+  //       limit: 100000,
+  //     },
+  //   });
 
-    return reviews.data.length > 0 ? reviews.data : null;
-  }
+  //   return reviews.data.length > 0 ? reviews.data : null;
+  // }
 
-  async getQuestionsByProductId(id: string): Promise<PaginationDTO<Review> | null> {
-    const reviews = await axios.get(`${process.env.QUESTIONS_DB}/questions/`, {
-      params: {
-        productId: id,
-        merge: 'false',
-        limit: 100000,
-      },
-    });
+  // async getQuestionsByProductId(id: string): Promise<PaginationDTO<Review> | null> {
+  //   const reviews = await axios.get(`${process.env.QUESTIONS_DB}/questions/`, {
+  //     params: {
+  //       productId: id,
+  //       merge: 'false',
+  //       limit: 100000,
+  //     },
+  //   });
 
-    return reviews.data.length > 0 ? reviews.data : null;
-  }
+  //   return reviews.data.length > 0 ? reviews.data : null;
+  // }
 
-  async getProductRatingFromReviews(reviews: PaginationDTO<Review>): Promise<RatingDTO | null> {
-    let counter: number = 0;
-    let totalRating: number = 0;
+  // async getProductRatingFromReviews(reviews: PaginationDTO<Review>): Promise<RatingDTO | null> {
+  //   let counter: number = 0;
+  //   let totalRating: number = 0;
 
-    const rating: RatingDTO = {
-      '1': 0,
-      '2': 0,
-      '3': 0,
-      '4': 0,
-      '5': 0,
-      'avg': 0,
-    };
+  //   const rating: RatingDTO = {
+  //     '1': 0,
+  //     '2': 0,
+  //     '3': 0,
+  //     '4': 0,
+  //     '5': 0,
+  //     'avg': 0,
+  //   };
 
-    reviews.rows.map((review: Review) => {
-      const index = String(review.rating);
-      rating[index as keyof typeof rating] += 1;
+  //   reviews.rows.map((review: Review) => {
+  //     const index = String(review.rating);
+  //     rating[index as keyof typeof rating] += 1;
 
-      totalRating += review.rating;
-      counter += 1;
-    });
+  //     totalRating += review.rating;
+  //     counter += 1;
+  //   });
 
-    rating.avg = +(totalRating / counter).toFixed(2);
-    return rating;
-  }
+  //   rating.avg = +(totalRating / counter).toFixed(2);
+  //   return rating;
+  // }
 
-  async mergeProduct(product: Product): Promise<any> {
-    const rawReviews = (await this.getReviewsByProductId(product.id)) as any;
-    const rawQuestions = (await this.getQuestionsByProductId(product.id)) as any;
-    const rating = rawReviews ? await this.getProductRatingFromReviews(rawReviews) : null;
-    const reviews = [];
+  // async mergeProduct(product: Product): Promise<any> {
+  //   const rawReviews = (await this.getReviewsByProductId(product.id)) as any;
+  //   const rawQuestions = (await this.getQuestionsByProductId(product.id)) as any;
+  //   const rating = rawReviews ? await this.getProductRatingFromReviews(rawReviews) : null;
+  //   const reviews = [];
 
-    const users = {} as any;
-    if (Array.isArray(rawReviews?.rows)) {
-      for (const review of rawReviews?.rows) {
-        if (!users[review.userId]) {
-          users[review.userId] = await this.getUserById(review.userId);
-        }
+  //   const users = {} as any;
+  //   if (Array.isArray(rawReviews?.rows)) {
+  //     for (const review of rawReviews?.rows) {
+  //       if (!users[review.userId]) {
+  //         users[review.userId] = await this.getUserById(review.userId);
+  //       }
 
-        const comments = [];
+  //       const comments = [];
 
-        for (const comment of review.comments) {
-          if (!users[comment.userId]) {
-            users[comment.userId] = await this.getUserById(comment.userId);
-          }
+  //       for (const comment of review.comments) {
+  //         if (!users[comment.userId]) {
+  //           users[comment.userId] = await this.getUserById(comment.userId);
+  //         }
 
-          comments.push({
-            ...comment,
-            user: users[comment.userId],
-          });
-        }
+  //         comments.push({
+  //           ...comment,
+  //           user: users[comment.userId],
+  //         });
+  //       }
 
-        reviews.push({
-          ...review,
-          user: users[review.userId],
-          comments: comments,
-        });
-      }
-    }
+  //       reviews.push({
+  //         ...review,
+  //         user: users[review.userId],
+  //         comments: comments,
+  //       });
+  //     }
+  //   }
 
-    const questions = [];
+  //   const questions = [];
 
-    if (Array.isArray(rawQuestions?.rows)) {
-      for (const question of rawQuestions?.rows) {
-        if (!users[question.userId]) {
-          users[question.userId] = await this.getUserById(question.userId);
-        }
+  //   if (Array.isArray(rawQuestions?.rows)) {
+  //     for (const question of rawQuestions?.rows) {
+  //       if (!users[question.userId]) {
+  //         users[question.userId] = await this.getUserById(question.userId);
+  //       }
 
-        const comments = [];
+  //       const comments = [];
 
-        for (const comment of question.comments) {
-          if (!users[comment.userId]) {
-            users[comment.userId] = await this.getUserById(comment.userId);
-          }
+  //       for (const comment of question.comments) {
+  //         if (!users[comment.userId]) {
+  //           users[comment.userId] = await this.getUserById(comment.userId);
+  //         }
 
-          comments.push({
-            ...comment,
-            user: users[comment.userId],
-          });
-        }
+  //         comments.push({
+  //           ...comment,
+  //           user: users[comment.userId],
+  //         });
+  //       }
 
-        questions.push({
-          ...question,
-          user: users[question.userId],
-          comments: comments,
-        });
-      }
-    }
+  //       questions.push({
+  //         ...question,
+  //         user: users[question.userId],
+  //         comments: comments,
+  //       });
+  //     }
+  //   }
 
-    return {
-      ...product,
-      rating: rating,
-      reviews: reviews,
-      questions: questions,
-    };
-  }
+  //   return {
+  //     ...product,
+  //     rating: rating,
+  //     reviews: reviews,
+  //     questions: questions,
+  //   };
+  // }
 
   async getUserById(id: string): Promise<User | undefined> {
     try {

@@ -23,4 +23,5 @@ const sendTokenLimiter: any = rateLimit({
   max: 1,
   message: 'Too many request from this IP, please try again after 30s',
 });
+
 export { resetPasswordLimiter, changePasswordLimiter, sendTokenLimiter, emailConfirmationLimiter };

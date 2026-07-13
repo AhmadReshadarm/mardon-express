@@ -52,7 +52,7 @@ export class ReviewService {
     queryBuilder.orderBy(`review.${sortBy}`, orderBy).skip(offset).take(limit);
 
     return {
-      rows: merge === 'true' ? await this.mergeReviews(queryBuilder) : await queryBuilder.getMany(),
+      rows: await queryBuilder.getMany(), // merge === 'true' ? await this.mergeReviews(queryBuilder) : await queryBuilder.getMany(),
       length: await queryBuilder.getCount(),
     };
   }
@@ -65,7 +65,7 @@ export class ReviewService {
       .where('review.id = :id', { id: id })
       .getOneOrFail();
 
-    return await this.mergeReviewUserId(review);
+    return review; // await this.mergeReviewUserId(review);
   }
 
   async getUserById(id: string): Promise<UserDTO | undefined> {
@@ -254,26 +254,26 @@ export class ReviewService {
     }
   }
 
-  async mergeReviews(queryBuilder: SelectQueryBuilder<Review>) {
-    const reviews = await queryBuilder.getMany();
-    const result = reviews.map(async review => await this.mergeReviewUserId(review));
+  // async mergeReviews(queryBuilder: SelectQueryBuilder<Review>) {
+  //   const reviews = await queryBuilder.getMany();
+  //   const result = reviews.map(async review => await this.mergeReviewUserId(review));
 
-    return Promise.all(result);
-  }
+  //   return Promise.all(result);
+  // }
 
-  async mergeReviewUserId(review: Review): Promise<ReviewDTO> {
-    return {
-      id: review.id,
-      rating: review.rating,
-      text: review.text,
-      createdAt: review.createdAt,
-      updatedAt: review.updatedAt,
-      showOnMain: review.showOnMain,
-      product: (await this.getProductById(review.productId)) ?? review.productId,
-      user: (await this.getUserById(review.userId)) ?? review.userId,
-      comments: review.comments,
-      reactions: review.reactions,
-      images: review.images,
-    };
-  }
+  // async mergeReviewUserId(review: Review): Promise<ReviewDTO> {
+  //   return {
+  //     id: review.id,
+  //     rating: review.rating,
+  //     text: review.text,
+  //     createdAt: review.createdAt,
+  //     updatedAt: review.updatedAt,
+  //     showOnMain: review.showOnMain,
+  //     product: (await this.getProductById(review.productId)) ?? review.productId,
+  //     user: (await this.getUserById(review.userId)) ?? review.userId,
+  //     comments: review.comments,
+  //     reactions: review.reactions,
+  //     images: review.images,
+  //   };
+  // }
 }

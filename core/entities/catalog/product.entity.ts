@@ -48,6 +48,18 @@ export class Product {
   @Column({ default: true })
   publish: boolean;
 
+  @IsNotEmpty()
+  @Column({ default: 0 })
+  avrgRating: number;
+
+  @IsNotEmpty()
+  @Column({ default: 0 })
+  reviewCount: number;
+
+  @IsNotEmpty()
+  @Column({ default: 0 })
+  questionCount: number;
+
   @ManyToMany(() => Tag, tag => tag.products, { cascade: true, nullable: true })
   @JoinTable()
   tags?: Tag[];
@@ -66,6 +78,9 @@ export class Product {
     category: Category;
     url: string;
     publish: boolean;
+    avrgRating: number;
+    reviewCount: number;
+    questionCount: number;
     tags?: Tag[];
     parameterProducts: ParameterProducts[];
     productVariants: ProductVariant[];
@@ -78,6 +93,9 @@ export class Product {
       this.category = args.category;
       this.url = args.url;
       this.publish = args.publish;
+      this.avrgRating = args.avrgRating;
+      this.reviewCount = args.reviewCount;
+      this.questionCount = args.questionCount;
       this.tags = args.tags;
       this.parameterProducts = args.parameterProducts;
       this.productVariants = args.productVariants;

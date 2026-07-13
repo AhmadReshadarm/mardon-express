@@ -70,15 +70,15 @@ export class UserService {
     return user;
   }
 
-  async getAdmin(): Promise<User | null> {
-    const user = await this.userRepository.findOne({
-      where: {
-        role: Equal(Role.Admin),
-      },
-    });
+  // async getAdmin(): Promise<User | null> {
+  //   const user = await this.userRepository.findOne({
+  //     where: {
+  //       role: Equal(Role.Admin),
+  //     },
+  //   });
 
-    return user;
-  }
+  //   return user;
+  // }
 
   async getByEmail(email: string) {
     const user = await this.userRepository.findOne({

@@ -1,7 +1,7 @@
-import { Category, Color, Parameter, ParameterProducts, Review, Tag } from '../core/entities';
-import { RatingDTO } from '../core/lib/dto';
+import { Category, Color, Parameter, ParameterProducts, ProductVariant, Review, Tag } from '../core/entities';
+// import { RatingDTO } from '../core/lib/dto';
 import { IsBoolean, IsNotEmpty, IsPositive, IsString } from 'class-validator';
-import { Column, CreateDateColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, UpdateDateColumn } from 'typeorm';
+// import { Column, CreateDateColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, UpdateDateColumn } from 'typeorm';
 // import { BrandService } from './brands/brand.service';
 // Brand,
 export interface ProductQueryDTO {
@@ -142,20 +142,24 @@ export interface BrandQueryDTO {
 export interface ProductDTO {
   readonly id: string;
   readonly name: string;
-  readonly price: number;
-  readonly oldPrice?: number;
+  // readonly price: number;
+  // readonly oldPrice?: number;
   readonly desc: string | null;
-  readonly available: boolean;
+  // readonly available: boolean;
   readonly createdAt: Date;
   readonly updatedAt: Date;
-  readonly images: string | null;
+  // readonly images: string | null;
   readonly url: string;
   readonly category: Category;
   readonly colors?: Color[];
   readonly tags?: Tag[];
-  readonly rating: RatingDTO | null;
-  readonly reviews: Review[] | null;
+  // readonly rating: RatingDTO | null;
+  // readonly reviews: Review[] | null;
+  readonly avrgRating: number;
+  readonly reviewCount: number;
+  readonly questionCount: number;
   readonly parameterProducts: ParameterProducts[] | null;
+  readonly productVariants: ProductVariant[];
 }
 
 export class CreateCategoryDTO {

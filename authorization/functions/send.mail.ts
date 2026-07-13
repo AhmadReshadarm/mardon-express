@@ -21,7 +21,7 @@ const sendMail = (user: User) => {
     {
       to: user.email,
       from: 'NBHOZ <info@nbhoz.ru>',
-      subject: `Добро пожаловать в nbhoz.ru ${user.email}`,
+      subject: `Добро пожаловать в НБХОЗ(nbhoz.ru) ${user.email}`,
       html: signupEmailTemplate(user),
     },
     (error, info) => {
@@ -53,7 +53,7 @@ const sendMailToken = (payload: Payload) => {
     {
       to: payload.email,
       from: 'NBHOZ <info@nbhoz.ru>',
-      subject: `Добро пожаловать в nbhoz.ru ${payload.email}`,
+      subject: `Добро пожаловать в НБХОЗ(nbhoz.ru) ${payload.email}`,
       html: tokenEmailTemplate(payload),
     },
     (error, info) => {
@@ -84,7 +84,7 @@ const sendMailResetPsw = (token: any, user: any) => {
     {
       to: user.email,
       from: 'NBHOZ <info@nbhoz.ru>',
-      subject: `Сбросить пароль для ${user.email}`,
+      subject: `Сбросить пароль для ${user.email} НБХОЗ(nbhoz.ru)`,
       html: resetPswEmailTemplate(user.firstName, user.email, url),
     },
     (error, info) => {
@@ -115,7 +115,7 @@ const sendHelpDiskMail = (userEmail: string, adminEmail: string, text: string) =
     {
       to: adminEmail,
       from: 'NBHOZ <info@nbhoz.ru>',
-      subject: `Вопрос от ${userEmail}`,
+      subject: `Вопрос от ${userEmail} НБХОЗ(nbhoz.ru)`,
       html: `<div><p>Вопрос от <a href="mailto:${userEmail}">${userEmail}</a>:</p></div><br /><div><p>${text}</p></div>`,
     },
     (error, info) => {

@@ -10,7 +10,7 @@ import { Controller, Delete, Get, Middleware, Post, Put } from '../../core/decor
 import { Role } from '../../core/enums/roles.enum';
 import { validation } from '../../core/lib/validator';
 import { User } from '../../core/entities';
-import { changePasswordLimiter } from '../functions/rate.limit';
+import { changePasswordLimiter, emailConfirmationLimiter, sendTokenLimiter } from '../functions/rate.limit';
 @singleton()
 @Controller('/users')
 export class UserController {
@@ -97,11 +97,14 @@ export class UserController {
       resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: `somthing went wrong: ${error}` });
     }
   }
-  // sendTokenLimiter, emailConfirmationLimiter
-  @Post('email-confirmation')
-  @Middleware([verifyToken, isUser])
+
+  @Get('email-confirmation')
+  @Middleware([verifyToken, isUser, sendTokenLimiter, emailConfirmationLimiter])
   async sendMailConfirmation(req: Request, resp: Response) {
     const { jwt } = resp.locals;
+    if (jwt.verified) {
+      return resp.status(HttpStatus.BAD_REQUEST).json({ message: 'User is already verfied' });
+    }
     const payload = {
       isVerified: false,
       id: jwt.id,

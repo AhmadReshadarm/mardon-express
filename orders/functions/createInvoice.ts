@@ -63,22 +63,92 @@ const calculateIndvidualPercent = (selectedMethod: number, productPrice: number)
   }
 };
 
-const generateUpdateInoviceTemplet = (payload: any) => {
-  return `
-      <div>
-        <h1>Статус заказа был изменен на ${payload.status}</h1>
-      </div>
-      <div>
-        <span>Здравствуйте ${payload.receiverName},</span>
-      </div>
-      <div>
-        <span>Статус вашего заказа был изменен на ${payload.status}</span>
-      </div>
-      <div>
-        <span>Вы также можете проверить статус вашего заказа здесь. <a href="https://nbhoz.ru/orders">NBHOZ > Мои заказы</a></span>
-      </div>
-  `;
-};
+// const generateUpdateInoviceTemplet = (payload: any) => {
+//   return `
+//       <div>
+//         <h1>Статус заказа был изменен на ${payload.status}</h1>
+//       </div>
+//       <div>
+//         <span>Здравствуйте ${payload.receiverName},</span>
+//       </div>
+//       <div>
+//         <span>Статус вашего заказа был изменен на ${payload.status}</span>
+//       </div>
+//       <div>
+//         <span>Вы также можете проверить статус вашего заказа здесь. <a href="https://nbhoz.ru/orders">NBHOZ > Мои заказы</a></span>
+//       </div>
+//   `;
+// };
+
+const generateUpdateInoviceTemplet = (payload: any) => `
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Изменение статуса заказа | NBHOZ</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#eee8dc">
+    <tr>
+      <td align="center" style="padding: 30px 0;">
+        <table width="100%" max-width="600" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff" style="border-collapse: collapse; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+          <!-- Header -->
+          <tr style="background-color:#eee8dc; height:100px;">
+            <td align="center" style="padding: 20px; border-bottom: 1px solid #eeeeee;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="left" style="font-size: 24px; font-weight: bold; color: #000000;">NBHOZ</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <!-- Body -->
+          <tr>
+            <td style="padding: 30px 25px;">
+              <h2 style="margin: 0 0 15px; font-size: 22px; color: #000000;">Обновление статуса заказа</h2>
+              <p style="margin: 0 0 15px; font-size: 16px; color: #333333;">
+                Здравствуйте, ${payload.receiverName}.
+              </p>
+              <p style="margin: 0 0 25px; font-size: 16px; line-height: 1.5; color: #333333;">
+                Статус вашего заказа изменён на <strong style="color: #000000;">${payload.status}</strong>.
+              </p>
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="center" style="padding: 15px 0 0;">
+                    <a href="https://nbhoz.ru/orders" target="_blank" style="display: inline-block; background-color: #333333; color: #ffffff; text-decoration: none; padding: 12px 30px; border-radius: 6px; font-size: 16px; font-weight: bold;">Мои заказы</a>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin: 25px 0 0; font-size: 14px; color: #555555;">
+                Вы также можете отслеживать статус в личном кабинете на сайте <a href="https://nbhoz.ru/orders" style="color: #000000; text-decoration: underline;">nbhoz.ru</a>.
+              </p>
+            </td>
+          </tr>
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 20px; background-color: #eee8dc; color: #000000;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="center" style="padding: 5px 0; font-size: 12px;">
+                    Телефон поддержки: +7 925-486-54-44 | Email: info@nbhoz.ru
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="padding: 5px 0; font-size: 12px;">
+                    © ${new Date().getFullYear()} NBHOZ. Все права защищены.
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`;
 
 // const generateInvoiceTemplet = (payload: templetDTO, cidImageMap: Record<string, string>, paymentOption: number) => {
 //   return `
@@ -296,9 +366,9 @@ const generateInvoiceTemplet = (payload: templetDTO, cidImageMap: Record<string,
                                     <tr>
                                       <td style="font-size: 14px;">
                                         ${orderproduct!.qty} × ${calculateIndvidualPercent(
-                    paymentOption,
-                    orderproduct.productVariant?.price!,
-                  )}₽
+                                          paymentOption,
+                                          orderproduct.productVariant?.price!,
+                                        )}₽
                                       </td>
                                       <td align="right" style="font-weight: bold; color: #27ae60; font-size: 16px;">
                                         ${calculateIndvidualProductTotal(

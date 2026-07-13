@@ -19,47 +19,47 @@ import { UserService } from '../services/user.service';
 @Controller('/auth')
 export class AuthController {
   constructor(private userService: UserService) {
-    (async () => {
-      const admin = await this.userService.getAdmin();
-      if (!admin) {
-        const salt = await bcrypt.genSalt(10);
-        const hashedPass = await bcrypt.hash('arm12345', salt);
-        await this.userService.createUser({
-          firstName: 'admin',
-          lastName: 'admin',
-          isVerified: true,
-          email: 'admin@admin.ru',
-          password: hashedPass,
-          role: Role.Admin,
-        } as any);
-      }
-    })();
+    // (async () => {
+    //   const admin = await this.userService.getAdmin();
+    //   if (!admin) {
+    //     const salt = await bcrypt.genSalt(10);
+    //     const hashedPass = await bcrypt.hash('arm12345', salt);
+    //     await this.userService.createUser({
+    //       firstName: 'admin',
+    //       lastName: 'admin',
+    //       isVerified: true,
+    //       email: 'admin@admin.ru',
+    //       password: hashedPass,
+    //       role: Role.Admin,
+    //     } as any);
+    //   }
+    // })();
   }
 
-  @Get('init-admin')
-  async initAdmin(req: Request, resp: Response) {
-    const admin = await this.userService.getAdmin();
+  // @Get('init-admin')
+  // async initAdmin(req: Request, resp: Response) {
+  //   const admin = await this.userService.getAdmin();
 
-    if (!admin) {
-      const salt = await bcrypt.genSalt(10);
-      const hashedPass = await bcrypt.hash('arm12345', salt);
+  //   if (!admin) {
+  //     const salt = await bcrypt.genSalt(10);
+  //     const hashedPass = await bcrypt.hash('arm12345', salt);
 
-      const user = await this.userService.createUser({
-        firstName: 'admin',
-        lastName: 'admin',
-        isVerified: true,
-        email: 'admin@admin.ru',
-        password: hashedPass,
-        role: Role.Admin,
-      } as any);
+  //     const user = await this.userService.createUser({
+  //       firstName: 'admin',
+  //       lastName: 'admin',
+  //       isVerified: true,
+  //       email: 'admin@admin.ru',
+  //       password: hashedPass,
+  //       role: Role.Admin,
+  //     } as any);
 
-      resp.status(HttpStatus.CREATED).json({ user });
+  //     resp.status(HttpStatus.CREATED).json({ user });
 
-      return;
-    }
+  //     return;
+  //   }
 
-    resp.status(HttpStatus.CREATED).json({ info: 'already exists', user: admin });
-  }
+  //   resp.status(HttpStatus.CREATED).json({ info: 'already exists', user: admin });
+  // }
 
   @Post('signup')
   async signUp(req: Request, resp: Response) {
@@ -95,7 +95,6 @@ export class AuthController {
       const newUser = await validation(new User(payload));
       const created = await this.userService.createUser(newUser);
       const { password, ...others } = created;
-      // const tokenEmail = emailToken({ ...others });
       const accessTokenCreated = accessToken({ ...created, password: undefined });
       const refreshTokenCreated = refreshToken({ ...created, password: undefined });
       const token = emailToken({ ...created, password: undefined });
@@ -113,7 +112,6 @@ export class AuthController {
         user: { ...others },
         accessToken: accessTokenCreated,
         refreshToken: refreshTokenCreated,
-        password: generatedPassword, // todo remove this from here
       });
     } catch (error) {
       resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
@@ -292,48 +290,54 @@ export class AuthController {
     const { token } = req.params;
 
     if (!token) {
-      resp.status(HttpStatus.UNAUTHORIZED).json({ message: 'no token found' });
-      return;
+      return resp.status(HttpStatus.BAD_REQUEST).json({ message: 'Token is required' });
     }
 
     const { EMAIL_SECRET_TOKEN } = process.env;
 
+    if (!EMAIL_SECRET_TOKEN) {
+      console.error('EMAIL_SECRET_TOKEN environment variable is not set');
+      return resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
+    }
+
     try {
-      jwt.verify(token, EMAIL_SECRET_TOKEN, async (error: any, decoded: any) => {
-        if (error) {
-          resp.status(HttpStatus.FORBIDDEN).json(error);
-          return;
-        }
+      const decoded = await new Promise<any>((resolve, reject) => {
+        jwt.verify(token, EMAIL_SECRET_TOKEN, (err, decodedPayload) => {
+          if (err) return reject(err);
+          resolve(decodedPayload);
+        });
+      });
 
-        const user = await this.userService.getUser(decoded.id);
+      const user = await this.userService.getUser(decoded.id);
 
-        if (user.isVerified) {
-          resp.status(HttpStatus.REQUEST_TIMEOUT).json('Token was already used');
-          return;
-        }
+      if (user.isVerified) {
+        return resp.status(HttpStatus.CONFLICT).json({ message: 'Email already verified' });
+      }
 
-        const payload: any = {
-          id: user.id,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.email,
-          password: user.password,
-          isVerified: true,
-          role: decoded.role !== Role.Admin ? Role.User : Role.Admin,
-        };
+      const updatedPayload = {
+        ...user,
+        isVerified: true,
+        role: decoded.role !== Role.Admin ? Role.User : Role.Admin,
+      };
 
-        await this.userService.updateUser(decoded.id, payload);
+      await this.userService.updateUser(decoded.id, updatedPayload);
 
-        const accessTokenCreated = accessToken({ ...user, password: undefined });
-        const refreshTokenCreated = refreshToken({ ...user, password: undefined });
-        const { password, ...others } = payload;
+      const { password, ...safeUser } = updatedPayload;
+      const accessTokenCreated = accessToken(safeUser);
+      const refreshTokenCreated = refreshToken(safeUser);
 
-        resp
-          .status(HttpStatus.OK)
-          .json({ user: { ...others }, accessToken: accessTokenCreated, refreshToken: refreshTokenCreated });
+      return resp.status(HttpStatus.OK).json({
+        user: safeUser,
+        accessToken: accessTokenCreated,
+        refreshToken: refreshTokenCreated,
       });
     } catch (error) {
-      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
+      if (error instanceof jwt.JsonWebTokenError || error instanceof jwt.TokenExpiredError) {
+        return resp.status(HttpStatus.UNAUTHORIZED).json({ message: 'Invalid or expired token' });
+      }
+
+      console.error('Unexpected error during email verification:', error);
+      return resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
     }
   }
 }
