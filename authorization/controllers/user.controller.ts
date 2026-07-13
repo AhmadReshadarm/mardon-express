@@ -102,7 +102,7 @@ export class UserController {
   @Middleware([verifyToken, isUser, sendTokenLimiter, emailConfirmationLimiter])
   async sendMailConfirmation(req: Request, resp: Response) {
     const { jwt } = resp.locals;
-    if (jwt.verified) {
+    if (jwt.isVerified) {
       return resp.status(HttpStatus.BAD_REQUEST).json({ message: 'User is already verfied' });
     }
     const payload = {
