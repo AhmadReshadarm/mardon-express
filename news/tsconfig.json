@@ -1,6 +1,16 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    "outDir": "./dist",
+    "outDir": "./dist"
   }
 }
+
+// {
+//   "extends": "../tsconfig.json",
+//   "compilerOptions": {
+//     "outDir": "../dist/news",
+//     "rootDir": ".."
+//   },
+//   "include": ["../core/**/*.ts", "./**/*.ts"],
+//   "exclude": ["dist", "node_modules"]
+// }

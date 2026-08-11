@@ -182,7 +182,7 @@ export class UserController {
     try {
       const user = await this.userService.getUser(id);
       if (email === user.email) {
-        resp.status(HttpStatus.CONFLICT).json({ message: "can't change the email" });
+        resp.status(HttpStatus.CONFLICT).json({ message: 'Email can not be the same as before' });
         return;
       }
 

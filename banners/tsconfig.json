@@ -4,3 +4,13 @@
     "outDir": "./dist"
   }
 }
+
+// {
+//   "extends": "../tsconfig.json",
+//   "compilerOptions": {
+//     "outDir": "../dist/banners",
+//     "rootDir": ".."
+//   },
+//   "include": ["../core/**/*.ts", "./**/*.ts"],
+//   "exclude": ["dist", "node_modules"]
+// }

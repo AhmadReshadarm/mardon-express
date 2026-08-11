@@ -116,47 +116,89 @@ export class ImageController {
     }
   }
 
+  // @Get('compress/:fileName')
+  // @Middleware([createDestinationCompressed])
+  // async getCompressedImage(req: Request, resp: Response) {
+  //   const { fileName } = req.params;
+  //   const { qlty, width, height, lossless } = req.query;
+
+  //   try {
+  //     if (!fs.existsSync(`${DESTINATION}/${fileName}`)) {
+  //       resp.status(HttpStatus.NOT_FOUND).json({ message: 'the file your looking for does not exist' });
+  //       return;
+  //     }
+
+  //     const webp = await sharp(`${DESTINATION}/${fileName}`);
+  //     if (width && height) {
+  //       webp
+  //         .webp({ lossless: Boolean(lossless), quality: Number(qlty) })
+  //         .resize(Number(width), Number(height), { fit: 'inside' })
+  //         .toFile(`${DESTINATION_COMPRESSED}/thumbnail-${fileName}`)
+  //         .then(() => {
+  //           resp.setHeader('content-Type', 'image/webp');
+  //           resp.setHeader('Cache-Control', 'public, max-age=31536000');
+  //           resp.sendFile(`thumbnail-${fileName}`, { root: DESTINATION_COMPRESSED });
+  //         })
+  //         .catch(error => {
+  //           console.log(error);
+  //         });
+  //       return;
+  //     }
+  //     webp
+  //       .webp({ lossless: false, quality: Number(qlty) })
+  //       .toFile(`${DESTINATION_COMPRESSED}/${fileName}`)
+  //       .then(() => {
+  //         resp.setHeader('content-Type', 'image/webp');
+  //         resp.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  //         resp.sendFile(fileName, { root: DESTINATION_COMPRESSED });
+  //       })
+  //       .catch(error => {
+  //         console.log(error);
+  //       });
+  //   } catch (error: any) {
+  //     resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
+  //   }
+  // }
+
   @Get('compress/:fileName')
   @Middleware([createDestinationCompressed])
   async getCompressedImage(req: Request, resp: Response) {
-    const { fileName } = req.params;
     const { qlty, width, height, lossless } = req.query;
+    const { fileName } = req.params;
 
     try {
-      if (!fs.existsSync(`${DESTINATION}/${fileName}`)) {
-        resp.status(HttpStatus.NOT_FOUND).json({ message: 'the file your looking for does not exist' });
-        return;
+      const inputPath = `${DESTINATION}/${fileName}`;
+      if (!fs.existsSync(inputPath)) {
+        return resp.status(HttpStatus.NOT_FOUND).json({ message: 'File not found' });
       }
 
-      const webp = await sharp(`${DESTINATION}/${fileName}`);
-      if (width && height) {
-        webp
-          .webp({ lossless: Boolean(lossless), quality: Number(qlty) })
-          .resize(Number(width), Number(height), { fit: 'inside' })
-          .toFile(`${DESTINATION_COMPRESSED}/thumbnail-${fileName}`)
-          .then(() => {
-            resp.setHeader('content-Type', 'image/webp');
-            resp.setHeader('Cache-Control', 'public, max-age=31536000');
-            resp.sendFile(`thumbnail-${fileName}`, { root: DESTINATION_COMPRESSED });
-          })
-          .catch(error => {
-            console.log(error);
-          });
-        return;
+      let image = sharp(inputPath);
+
+      // Resize if width is provided
+      if (width) {
+        const resizeOpts: sharp.ResizeOptions = { width: Number(width), fit: 'inside' };
+        if (height) resizeOpts.height = Number(height);
+        image = image.resize(resizeOpts);
       }
-      webp
-        .webp({ lossless: false, quality: Number(qlty) })
-        .toFile(`${DESTINATION_COMPRESSED}/${fileName}`)
-        .then(() => {
-          resp.setHeader('content-Type', 'image/webp');
-          resp.setHeader('Cache-Control', 'public, max-age=31536000');
-          resp.sendFile(fileName, { root: DESTINATION_COMPRESSED });
-        })
-        .catch(error => {
-          console.log(error);
-        });
-    } catch (error: any) {
-      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
+
+      // Convert to WebP with given quality
+      image = image.webp({
+        lossless: Boolean(lossless),
+        quality: Number(qlty) || 75,
+      });
+
+      // Save to compressed folder (you might want a unique name per size)
+      const outputFileName = width ? `w${width}-${fileName}` : fileName;
+      const outputPath = `${DESTINATION_COMPRESSED}/${outputFileName}`;
+
+      await image.toFile(outputPath);
+
+      resp.setHeader('Content-Type', 'image/webp');
+      resp.setHeader('Cache-Control', 'public, max-age=31536000');
+      resp.sendFile(outputFileName, { root: DESTINATION_COMPRESSED });
+    } catch (error) {
+      console.error(error);
+      resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: 'Image processing failed' });
     }
   }
 
