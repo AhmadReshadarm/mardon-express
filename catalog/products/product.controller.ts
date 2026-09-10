@@ -42,6 +42,79 @@ export class ProductController {
     }
   }
 
+  @Get('indexnow')
+  async generateIndexNowBing(req: Request, resp: Response) {
+    try {
+      // IndexNow hard limit is 10,000 URLs per request
+      const { offset = 0, limit = 10000 } = req.query;
+
+      const apiKey = process.env.BING_API_KEY;
+      if (!apiKey) {
+        return resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'IndexNow API key is not configured' });
+      }
+
+      const products = await this.productService.getSitemapProducts(Number(limit), Number(offset));
+      if (!products.length) {
+        return resp.status(HttpStatus.OK).json({ message: 'No products to submit' });
+      }
+
+      const host = 'nbhoz.ru';
+      const keyLocation = `https://${host}/${apiKey}.txt`;
+      const urlList = [
+        ...products.map(p => `https://${host}/product/${p.url}`),
+        `https://${host}`,
+        `https://${host}/catalog`,
+        `https://${host}/contacts`,
+      ];
+
+      const result = await this.productService.submitUrls(urlList, {
+        host,
+        key: apiKey,
+        keyLocation,
+      });
+
+      if (!result.success) {
+        return resp.status(HttpStatus.BAD_GATEWAY).json({
+          message: 'IndexNow submission failed',
+          details: result,
+        });
+      }
+
+      return resp.status(HttpStatus.OK).json({
+        message: 'IndexNow submission successful',
+        count: urlList.length,
+        status: result.status,
+      });
+    } catch (error) {
+      console.log('IndexNow generation error:', error);
+      return resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to generate IndexNow request' });
+    }
+  }
+
+  // // one time request bing indexing url
+  // @Get('indexnow')
+  // async generateIndexNowBing(req: Request, resp: Response) {
+  //   try {
+  //     const { offset = 0, limit = 50000 } = req.query;
+  //     const products = await this.productService.getSitemapProducts(Number(limit), Number(offset));
+  //     const api_key = process.env.BING_API_KEY;
+  //     if (!api_key) {
+  //       return resp.status(HttpStatus.NOT_FOUND).json({ message: 'api key not found' });
+  //     }
+  //     const payload = {
+  //       host: 'nbhoz.ru',
+  //       key: api_key,
+  //       keyLocation: `https://nbhoz.ru/${api_key}.txt`,
+  //     };
+  //     const urlList = products.map(product => `https://nbhoz.ru/product/${product.url}`);
+  //     urlList.push('https://nbhoz.ru', 'https://nbhoz.ru/catalog', 'https://nbhoz.ru/contacts');
+  //     await this.productService.submitUrls(urlList, payload);
+  //     resp.status(HttpStatus.OK).json({ message: 'generated successfuly!' });
+  //   } catch (error) {
+  //     resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
+  //   }
+  // }
+
   // @Get('google')
   // async getProductsGoogle(req: Request, resp: Response) {
   //   try {
@@ -389,7 +462,8 @@ export class ProductController {
           'channel': {
             title: 'NBHOZ - интернет магазин хозтовары оптом. по выгодным ценам',
             link: 'https://nbhoz.ru',
-            description: '...', // keep your long description
+            description:
+              'NBHOZ, Дешевые хозтовары оптом в интернет магазине nbhoz в Москве и все Россия, купить Кухонная утварь, Товары для сервировки стола, Уборочный инвентарь, Товары для ванной комнаты, Прихожая, Товары для ремонта, Товары для дачи и сада, Спортивные и туристические товары, Бытовая техника, Товары для животных, Декор для дома',
             item: items,
           },
         },
@@ -776,15 +850,36 @@ export class ProductController {
   @Middleware([verifyToken, isAdmin])
   async createProduct(req: Request, resp: Response) {
     const { tags } = req.body;
+    let created;
     try {
       const newProduct = await validation(new Product(req.body));
 
       tags ? (newProduct.tags = await this.tagService.getTagsByIds(tags.map((tag: Tag) => String(tag)))) : null;
-      const created = await this.productService.createProduct(newProduct);
+      created = await this.productService.createProduct(newProduct);
       resp.status(HttpStatus.CREATED).json({ id: created.id });
     } catch (error) {
       resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
     }
+    const apiKey = process.env.BING_API_KEY;
+    if (!apiKey) {
+      console.log('IndexNow: API key not found, skipping submission');
+      return;
+    }
+
+    const host = 'nbhoz.ru';
+    const productUrl = `https://${host}/product/${created?.url}`;
+    const keyLocation = `https://${host}/${apiKey}.txt`;
+
+    const result = await this.productService.submitUrls([productUrl], {
+      host,
+      key: apiKey,
+      keyLocation,
+    });
+
+    console.log(
+      `IndexNow submit for ${productUrl}:`,
+      result.success ? `OK (${result.status})` : `FAILED (${result.status ?? 'N/A'} - ${result.error})`,
+    );
   }
 
   @Put(':id')
@@ -792,16 +887,38 @@ export class ProductController {
   async updateProduct(req: Request, resp: Response) {
     const { id } = req.params;
     const { tags } = req.body;
+    let updated;
     try {
       const newProduct = new Product(req.body);
 
       tags ? (newProduct.tags = await this.tagService.getTagsByIds(tags.map((tag: Tag) => String(tag)))) : null;
 
-      const updated = await this.productService.updateProduct(id, newProduct);
+      updated = await this.productService.updateProduct(id, newProduct);
       resp.status(HttpStatus.OK).json(updated);
     } catch (error) {
       resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
     }
+
+    const apiKey = process.env.BING_API_KEY;
+    if (!apiKey) {
+      console.log('IndexNow: API key not found, skipping submission');
+      return;
+    }
+
+    const host = 'nbhoz.ru';
+    const productUrl = `https://${host}/product/${updated?.url}`;
+    const keyLocation = `https://${host}/${apiKey}.txt`;
+
+    const result = await this.productService.submitUrls([productUrl], {
+      host,
+      key: apiKey,
+      keyLocation,
+    });
+
+    console.log(
+      `IndexNow submit for ${productUrl}:`,
+      result.success ? `OK (${result.status})` : `FAILED (${result.status ?? 'N/A'} - ${result.error})`,
+    );
   }
 
   @Delete(':id')

@@ -8,6 +8,11 @@ import { ParameterQueryDTO, ProductDTO, ProductQueryDTO } from '../catalog.dtos'
 import { PaginationDTO, RatingDTO } from '../../core/lib/dto';
 import axios from 'axios';
 import { validation } from '../../core/lib/validator';
+interface IndexNowConfig {
+  host: string;
+  key: string;
+  keyLocation: string;
+}
 
 @injectable()
 export class ProductService {
@@ -797,5 +802,37 @@ export class ProductService {
       rows: await queryBuilder.getMany(),
       length: await queryBuilder.getCount(),
     };
+  }
+
+  async submitUrls(
+    urls: string[],
+    config: IndexNowConfig,
+  ): Promise<{ success: boolean; status?: number; error?: string }> {
+    const { host, key, keyLocation } = config;
+
+    if (!urls.length) {
+      console.log('IndexNow: url list is empty, skipping submission');
+      return { success: true };
+    }
+
+    const payload = { host, key, keyLocation, urlList: urls };
+
+    try {
+      const response = await axios.post('https://api.indexnow.org/indexnow', payload, {
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        timeout: 10000,
+      });
+
+      const ok = response.status === 200 || response.status === 202;
+      if (!ok) {
+        console.log(`IndexNow: unexpected response status ${response.status}`);
+      }
+      return { success: ok, status: response.status };
+    } catch (error: any) {
+      const status = error?.response?.status;
+      const message = error?.response?.data?.message || error?.message || 'Unknown error';
+      console.log(`IndexNow: request failed (status: ${status ?? 'N/A'}) - ${message}`);
+      return { success: false, status, error: message };
+    }
   }
 }
