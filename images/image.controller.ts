@@ -188,7 +188,7 @@ export class ImageController {
       });
 
       // Save to compressed folder (you might want a unique name per size)
-      const outputFileName = `thumbnail-${fileName}`; // width ? `w${width}-${fileName}` : fileName;
+      const outputFileName = width ? `w${width}-${fileName}` : fileName; //`thumbnail-${fileName}`;
       const outputPath = `${DESTINATION_COMPRESSED}/${outputFileName}`;
 
       await image.toFile(outputPath);
