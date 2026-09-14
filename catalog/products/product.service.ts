@@ -56,6 +56,7 @@ export class ProductService {
       .leftJoinAndSelect('category.parent', 'categoryParent')
       .leftJoinAndSelect('product.tags', 'tag')
       .leftJoinAndSelect('product.parameterProducts', 'parameterProducts')
+      .leftJoinAndSelect('parameterProducts.parameter', 'parameter')
       .leftJoinAndSelect('product.productVariants', 'productVariant')
       .leftJoinAndSelect('productVariant.color', 'color');
 
