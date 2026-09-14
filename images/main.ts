@@ -1,8 +1,12 @@
-import path from "path";
-import "reflect-metadata";
-import { bootstrap } from "../core/bootstrap";
-import { ImageApp } from "./image.app";
+import path from 'path';
+import 'reflect-metadata';
+import { bootstrap } from '../core/bootstrap';
+import { ImageApp } from './image.app';
 import imageDataSource from './image.data-source';
+import sharp from 'sharp';
+
+sharp.cache(false);
+sharp.concurrency(1);
 
 const controllerPaths = path.resolve(__dirname, './load-controllers.js');
 const { PORT } = process.env;
