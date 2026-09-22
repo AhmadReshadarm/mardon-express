@@ -37,6 +37,9 @@ export class ProductVariant {
   @ManyToOne(() => Product, product => product.productVariants, { cascade: true, onDelete: 'CASCADE' })
   product: Product;
 
+  @Column({ default: 1 })
+  minimumAllowedOrder: number;
+
   constructor(args?: {
     price: number;
     available: boolean;
@@ -47,6 +50,7 @@ export class ProductVariant {
     images: string;
     product: Product;
     orderProducts: OrderProduct[];
+    minimumAllowedOrder: number;
   }) {
     if (args) {
       this.product = args.product;
@@ -57,6 +61,7 @@ export class ProductVariant {
       this.available = args.available;
       this.color = args.color;
       this.images = args.images;
+      this.minimumAllowedOrder = args.minimumAllowedOrder;
     }
   }
 }
