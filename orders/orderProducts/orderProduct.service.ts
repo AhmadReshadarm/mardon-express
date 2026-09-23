@@ -17,7 +17,7 @@ import {
 } from '../order.dtos';
 import { v4 } from 'uuid';
 import { PaginationDTO, RatingDTO } from '../../core/lib/dto';
-import { CustomInternalError } from 'core/domain/error/custom.internal.error';
+import { CustomInternalError } from '../../core/domain/error/custom.internal.error';
 
 @singleton()
 export class OrderProductService {
