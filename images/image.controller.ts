@@ -10,7 +10,7 @@ import { isAdmin, isUser, verifyToken } from '../core/middlewares';
 import { HttpStatus } from '../core/lib/http-status';
 import fs from 'fs';
 import axios from 'axios';
-import sharp from 'sharp';
+import sharp, { ResizeOptions } from 'sharp';
 
 @singleton()
 @Controller('/images')
@@ -176,7 +176,7 @@ export class ImageController {
 
       // Resize if width is provided
       if (width) {
-        const resizeOpts: sharp.ResizeOptions = { width: Number(width), fit: 'inside' };
+        const resizeOpts: ResizeOptions = { width: Number(width), fit: 'inside' };
         if (height) resizeOpts.height = Number(height);
         image = image.resize(resizeOpts);
       }
