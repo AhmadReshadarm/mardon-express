@@ -38,7 +38,7 @@ export class BasketController {
   async createBasket(req: Request, resp: Response) {
     const newBasket = new Basket(req.body);
     try {
-      await validation(newBasket);
+      // await validation(newBasket);
 
       const created = await this.basketService.createBasket(newBasket);
 
