@@ -562,7 +562,7 @@ export class ProductService {
     });
 
     if (parameterProducts) {
-      await validation(parameterProducts);
+      // await validation(parameterProducts);
 
       if (product.parameterProducts) {
         await Promise.all(
@@ -578,7 +578,7 @@ export class ProductService {
     let variants: ProductVariant[] = [];
 
     if (productVariants) {
-      await validation(productVariants);
+      // await validation(productVariants);
 
       product.productVariants?.forEach(variant => {
         const curVariant = productDTO.productVariants?.find(({ id }) => variant.id == id?.toString());
