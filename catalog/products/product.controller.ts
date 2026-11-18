@@ -42,54 +42,54 @@ export class ProductController {
     }
   }
 
-  @Get('indexnow')
-  async generateIndexNowBing(req: Request, resp: Response) {
-    try {
-      // IndexNow hard limit is 10,000 URLs per request
-      const { offset = 0, limit = 10000 } = req.query;
+  // @Get('indexnow') 👇 this was a one time use
+  // async generateIndexNowBing(req: Request, resp: Response) {
+  //   try {
+  //     // IndexNow hard limit is 10,000 URLs per request
+  //     const { offset = 0, limit = 10000 } = req.query;
 
-      const apiKey = process.env.BING_API_KEY;
-      if (!apiKey) {
-        return resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'IndexNow API key is not configured' });
-      }
+  //     const apiKey = process.env.BING_API_KEY;
+  //     if (!apiKey) {
+  //       return resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'IndexNow API key is not configured' });
+  //     }
 
-      const products = await this.productService.getSitemapProducts(Number(limit), Number(offset));
-      if (!products.length) {
-        return resp.status(HttpStatus.OK).json({ message: 'No products to submit' });
-      }
+  //     const products = await this.productService.getSitemapProducts(Number(limit), Number(offset));
+  //     if (!products.length) {
+  //       return resp.status(HttpStatus.OK).json({ message: 'No products to submit' });
+  //     }
 
-      const host = 'nbhoz.ru';
-      const keyLocation = `https://${host}/${apiKey}.txt`;
-      const urlList = [
-        ...products.map(p => `https://${host}/product/${p.url}`),
-        `https://${host}`,
-        `https://${host}/catalog`,
-        `https://${host}/contacts`,
-      ];
+  //     const host = 'nbhoz.ru';
+  //     const keyLocation = `https://${host}/${apiKey}.txt`;
+  //     const urlList = [
+  //       ...products.map(p => `https://${host}/product/${p.url}`),
+  //       `https://${host}`,
+  //       `https://${host}/catalog`,
+  //       `https://${host}/contacts`,
+  //     ];
 
-      const result = await this.productService.submitUrls(urlList, {
-        host,
-        key: apiKey,
-        keyLocation,
-      });
+  //     const result = await this.productService.submitUrls(urlList, {
+  //       host,
+  //       key: apiKey,
+  //       keyLocation,
+  //     });
 
-      if (!result.success) {
-        return resp.status(HttpStatus.BAD_GATEWAY).json({
-          message: 'IndexNow submission failed',
-          details: result,
-        });
-      }
+  //     if (!result.success) {
+  //       return resp.status(HttpStatus.BAD_GATEWAY).json({
+  //         message: 'IndexNow submission failed',
+  //         details: result,
+  //       });
+  //     }
 
-      return resp.status(HttpStatus.OK).json({
-        message: 'IndexNow submission successful',
-        count: urlList.length,
-        status: result.status,
-      });
-    } catch (error) {
-      console.log('IndexNow generation error:', error);
-      return resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to generate IndexNow request' });
-    }
-  }
+  //     return resp.status(HttpStatus.OK).json({
+  //       message: 'IndexNow submission successful',
+  //       count: urlList.length,
+  //       status: result.status,
+  //     });
+  //   } catch (error) {
+  //     console.log('IndexNow generation error:', error);
+  //     return resp.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to generate IndexNow request' });
+  //   }
+  // }
 
   // // one time request bing indexing url
   // @Get('indexnow')
