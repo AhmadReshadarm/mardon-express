@@ -1,7 +1,8 @@
 import {
   Column,
   CreateDateColumn,
-  Entity, JoinColumn,
+  Entity,
+  JoinColumn,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -26,12 +27,12 @@ export class Basket {
   checkout: Checkout;
 
   @CreateDateColumn()
-  createdAt: Date
+  createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
 
-  constructor(args?: { title: string, userId: string, orderProducts: OrderProduct[], checkout: Checkout }) {
+  constructor(args?: { userId: string; orderProducts: OrderProduct[]; checkout: Checkout }) {
     if (args) {
       this.orderProducts = args.orderProducts;
       this.userId = args.userId;
