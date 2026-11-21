@@ -364,17 +364,19 @@ export class ProductService {
         'category.id',
         'pv.price',
         'pv.images',
+        'pv.available',
         'pp.parameterId',
         'pp.value',
       ])
       .where('product.publish = :publish', { publish: true })
+      .where('pv.available = :available', { available: true })
       .orderBy('product.id', 'ASC')
       .getMany();
 
     return products
       .filter(p => {
         const firstVariant = p.productVariants?.[0];
-        return firstVariant && firstVariant.price !== 1 && firstVariant.available === true;
+        return firstVariant && firstVariant.price !== 1;
       })
       .map(p => {
         const images = this.getProductVariantsImages(p.productVariants);
