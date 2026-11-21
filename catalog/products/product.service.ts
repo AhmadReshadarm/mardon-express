@@ -374,7 +374,7 @@ export class ProductService {
     return products
       .filter(p => {
         const firstVariant = p.productVariants?.[0];
-        return firstVariant && firstVariant.price !== 1;
+        return firstVariant && firstVariant.price !== 1 && firstVariant.available === true;
       })
       .map(p => {
         const images = this.getProductVariantsImages(p.productVariants);
